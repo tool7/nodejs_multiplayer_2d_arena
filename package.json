@@ -1,0 +1,15 @@
+{
+  "name": "nodejs_multiplayer_2d_arena",
+  "version": "1.0.0",
+  "description": "Node.js multiplayer top-down 2D shooter",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "sat": "^0.7.1",
+    "socket.io": "^2.1.1",
+    "uuid": "^3.3.2"
+  }
+}
