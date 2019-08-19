@@ -61,7 +61,7 @@ class GameCore {
   }
 
   server_update () {
-    let playerData = this.players.map(player => {
+    const playerData = this.players.map(player => {
       return {
         id: player.instance.playerId,
         position: Object.assign({}, player.body.position),
@@ -72,11 +72,9 @@ class GameCore {
       };
     });
 
+    const dataToSend = this.sharedFunctions.encodeWorldSnapshotData({ players: playerData });
     this.players.forEach(player => {
-      player.instance.emit('server-update', {
-        playerData,
-        time: new Date().getTime()
-      });
+      player.instance.emit('server-update', dataToSend);
     });
 
     this.updateId = window.requestAnimationFrame(this.server_update.bind(this));

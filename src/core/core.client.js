@@ -17,8 +17,8 @@ class GameCore {
 
     this.serverTime = 0;
     this.serverUpdates = [];
-    this.otherPlayers = [];
-    this.projectiles = [];
+    this.otherPlayers = {};
+    this.projectiles = {};
 
     this.keyboard = new THREEx.KeyboardState();
     this.mouse = { position: {} };
@@ -176,8 +176,10 @@ class GameCore {
   }
 
   client_onServerUpdateReceived (data) {
-    this.serverTime = data.time - this.netOffset;
-    this.serverUpdates.push(data);
+    const decodedServerData = this.sharedFunctions.decodeWorldSnapshotData(data);
+
+    this.serverTime = decodedServerData.time - this.netOffset;
+    this.serverUpdates.push(decodedServerData);
 
     if (this.serverUpdates.length > this.serverUpdatesMaxLength) {
       this.serverUpdates.splice(0, 1);
@@ -191,7 +193,7 @@ class GameCore {
     if (!this.serverUpdates.length) { return; }
 
     let latestServerData = this.serverUpdates[this.serverUpdates.length - 1];
-    let selfPlayerData = latestServerData.playerData.find(p => { return p.id === this.self.id; });
+    let selfPlayerData = latestServerData.players[this.self.id];
 
     let selfPositionOnServer = selfPlayerData.position;
     let selfLastInputSeqOnServer = selfPlayerData.lastInputSeq;
@@ -217,7 +219,7 @@ class GameCore {
     if (!this.serverUpdates.length) { return; }
 
     let latestServerData = this.serverUpdates[this.serverUpdates.length - 1];
-    let selfPlayerData = latestServerData.playerData.find(p => { return p.id === this.self.id; });
+    let selfPlayerData = latestServerData.players[this.self.id];
 
     let selfAngleOnServer = selfPlayerData.rotation;
     let selfLastAngleSeqOnServer = selfPlayerData.lastAngleSeq;
@@ -248,42 +250,43 @@ class GameCore {
     let otherPlayers = data.players.filter(p => { return p.id !== this.self.id; });
 
     this.self.setInitialPosition(self.position);
-    this.otherPlayers = otherPlayers.map(p => {
-      let player = new Player(this, true);
-      player.id = p.id;
+
+    this.otherPlayers = otherPlayers.reduce((obj, p) => {
+      const player = new Player(this, true);
       player.setInitialPosition(p.position);
-      return player;
-    });
+
+      obj[p.id] = player;
+      return obj;
+    }, {});
   }
 
   client_onPlayerConnected (data) {
-    let player = new Player(this, true);
-    player.id = data.id;
+    const player = new Player(this, true);
     player.setInitialPosition(data.position);
 
-    this.otherPlayers.push(player);
+    this.otherPlayers[data.id] = player;
   }
 
   client_onPlayerDisconnected (id) {
-    let player = this.otherPlayers.find(p => { return p.id === id; });
+    const player = this.otherPlayers[id];
     player.remove();
 
-    this.otherPlayers = this.otherPlayers.filter(p => { return p.id !== id; });
+    delete this.otherPlayers[id];
   }
 
   client_onProjectileCreated (data) {
     const projectile = new Projectile(this, data);
-    this.projectiles.push(projectile);
+    this.projectiles[projectile.id] = projectile;
 
     // TODO: place somewhere else?
     createjs.Sound.play("basic-shot");
   }
 
   client_onProjectileRemoved (data) {
-    let projectile = this.projectiles.find(p => { return p.id === data.id; });
+    const projectile = this.projectiles[data.id];
     projectile.remove();
 
-    this.projectiles = this.projectiles.filter(p => { return p.id !== data.id; });
+    delete this.projectiles[data.id];
   }
 
   client_initMouseMoveHandler () {
@@ -402,9 +405,11 @@ class GameCore {
     if (timePoint === -Infinity) { timePoint = 0; }
     if (timePoint === Infinity) { timePoint = 0; }
 
-    this.otherPlayers.forEach(player => {
-      const previousPlayerState = previous.playerData.find(p => { return p.id === player.id; });
-      const targetPlayerState = target.playerData.find(p => { return p.id === player.id; });
+    Object.keys(this.otherPlayers).forEach(id => {
+      const player = this.otherPlayers[id];
+
+      const previousPlayerState = previous.players[id];
+      const targetPlayerState = target.players[id];
 
       if (!previousPlayerState || !targetPlayerState) { return; }
 
@@ -421,7 +426,7 @@ class GameCore {
 
     // Updating positions of local player if not predicting
     if (!this.clientPrediction) {
-      let targetPlayerState = target.playerData.find(p => { return p.id === this.self.id; });
+      let targetPlayerState = target.players[this.self.id];
 
       this.self.moveTo(targetPlayerState.position);
       this.self.rotateTo(targetPlayerState.rotation);
@@ -429,8 +434,8 @@ class GameCore {
   }
 
   client_updateProjectilesPositions () {
-    this.projectiles.forEach(projectile => {
-      projectile.move();
+    Object.keys(this.projectiles).forEach(id => {
+      this.projectiles[id].move();
     });
   }
 
