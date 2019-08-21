@@ -14,7 +14,6 @@ class Player {
     this.lastAngleSeq = null;
 
     this.health = 100;
-    this.isDead = false;
     this.velocity = 2;
 
     this.body = {

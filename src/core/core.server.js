@@ -66,7 +66,6 @@ class GameCore {
         id: player.instance.playerId,
         position: Object.assign({}, player.body.position),
         rotation: player.body.rotation,
-        health: player.health,
         lastInputSeq: +player.lastInputSeq,
         lastAngleSeq: +player.lastAngleSeq
       };
@@ -102,23 +101,14 @@ class GameCore {
 
       if (isOutOfBounds) {
         // TODO: better way of emitting the message to everyone (instead of this.players[0])
-        this.players[0] && this.players[0].instance.emit('projectile-removed', { id: projectile.id });
-        this.players[0] && this.players[0].instance.broadcast.emit('projectile-removed', { id: projectile.id });
+        this.players[0] && this.players[0].instance.emit('projectile-destroyed', projectile.id);
+        this.players[0] && this.players[0].instance.broadcast.emit('projectile-destroyed', projectile.id);
 
         this.projectiles.splice(projectileIndex, 1);
       }
     }
 
     this.server_handleCollisions();
-
-
-    // TODO: TESTING COLLISIONS
-    // this.players.forEach(player => {
-    //   this.server_isPlayerProjectileCollision(player.body.boundingBox, NULL);
-    // });
-
-
-
   }
 
   server_handleInput (player, inputKeys, inputSeq) {
@@ -155,7 +145,6 @@ class GameCore {
 
   server_handleCollisions () {
     this.players.forEach(player => {
-
       let projectileIndex = this.projectiles.length;
 
       while (projectileIndex--) {
@@ -165,8 +154,20 @@ class GameCore {
         const isCollision = this.server_isPlayerProjectileCollision(player.body.boundingBox, projectile.body.boundingBox);
 
         if (isCollision) {
-          player.instance.emit('projectile-removed', { id: projectile.id });
-          player.instance.broadcast.emit('projectile-removed', { id: projectile.id });
+          player.health -= projectile.damage;
+          if (player.health <= 0) {
+            this.server_onPlayerDeath(player);
+          }
+
+          player.instance.emit('projectile-destroyed', projectile.id);
+          player.instance.broadcast.emit('projectile-destroyed', projectile.id);
+
+          const shotPlayerData = {
+            id: player.instance.playerId,
+            health: player.health
+          };
+          player.instance.emit('player-shot', shotPlayerData);
+          player.instance.broadcast.emit('player-shot', shotPlayerData);
 
           this.projectiles.splice(projectileIndex, 1);
         }
@@ -176,6 +177,10 @@ class GameCore {
 
   server_isPlayerProjectileCollision (player, projectile) {
     return SAT.testCirclePolygon(player, projectile);
+  }
+
+  server_onPlayerDeath (player) {
+    this.players = this.players.filter(p => p.instance.id !== player.instance.id);
   }
 }
 

@@ -87,7 +87,7 @@
       };
 
       data.players.forEach(p => {
-        encodedData.players[p.id] = `${ p.health };${ p.position.x }-${ p.position.y };${ p.rotation };${ p.lastInputSeq };${ p.lastAngleSeq }`
+        encodedData.players[p.id] = `${ p.position.x }-${ p.position.y };${ p.rotation };${ p.lastInputSeq };${ p.lastAngleSeq }`
       });
 
       return encodedData;
@@ -98,14 +98,13 @@
 
       Object.keys(encodedData.players).forEach(playerId => {
         const encodedPlayerData = encodedData.players[playerId].split(";");
-        const encodedPlayerPosition = encodedPlayerData[1].split("-");
+        const encodedPlayerPosition = encodedPlayerData[0].split("-");
 
         players[playerId] = {
-          health: +encodedPlayerData[0],
           position: { x: +encodedPlayerPosition[0], y: +encodedPlayerPosition[1] },
-          rotation: +encodedPlayerData[2],
-          lastInputSeq: +encodedPlayerData[3],
-          lastAngleSeq: +encodedPlayerData[4]
+          rotation: +encodedPlayerData[1],
+          lastInputSeq: +encodedPlayerData[2],
+          lastAngleSeq: +encodedPlayerData[3]
         };
       });
 

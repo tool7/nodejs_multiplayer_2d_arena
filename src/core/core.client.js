@@ -11,6 +11,7 @@ class GameCore {
     };
 
     this.gameReady = false;
+    this.isPlayerAlive = true;
 
     this.updateDeltaTime = new Date().getTime();
     this.updateDeltaTimeLast = new Date().getTime();
@@ -66,6 +67,9 @@ class GameCore {
     this.client_createPingTimer();
 
     this.self = new Player(this, false);
+    this.self.registerEventListener("player-death", () => {
+      this.isPlayerAlive = false;
+    });
 
     this.client_initMouseMoveHandler();
     this.client_initMouseClickHandler();
@@ -79,7 +83,7 @@ class GameCore {
   // ========== CORE FUNCTIONS ==========
   initPhysicsSimulation () {
     setInterval(() => {
-      if (this.clientPrediction) {
+      if (this.clientPrediction && this.isPlayerAlive) {
         this.client_prediction();
       }
       this.client_updateProjectilesPositions();
@@ -145,7 +149,8 @@ class GameCore {
     this.socket.on('game-full', this.client_onGameFull.bind(this));
 
     this.socket.on('projectile-created', this.client_onProjectileCreated.bind(this));
-    this.socket.on('projectile-removed', this.client_onProjectileRemoved.bind(this));
+    this.socket.on('projectile-destroyed', this.client_onProjectileDestroyed.bind(this));
+    this.socket.on('player-shot', this.client_onPlayerShot.bind(this));
   }
 
   client_onGameFull () {
@@ -246,14 +251,15 @@ class GameCore {
   }
 
   client_initGameState (data) {
-    let self = data.players.find(p => { return p.id === this.self.id; });
-    let otherPlayers = data.players.filter(p => { return p.id !== this.self.id; });
+    let selfData = data.players.find(p => p.id === this.self.id);
+    let otherPlayersData = data.players.filter(p => p.id !== this.self.id);
 
-    this.self.setInitialPosition(self.position);
+    this.self.setInitialPosition(selfData.position);
 
-    this.otherPlayers = otherPlayers.reduce((obj, p) => {
+    this.otherPlayers = otherPlayersData.reduce((obj, p) => {
       const player = new Player(this, true);
       player.setInitialPosition(p.position);
+      player.setHealth(p.health);
 
       obj[p.id] = player;
       return obj;
@@ -282,11 +288,23 @@ class GameCore {
     createjs.Sound.play("basic-shot");
   }
 
-  client_onProjectileRemoved (data) {
-    const projectile = this.projectiles[data.id];
+  client_onProjectileDestroyed (id) {
+    const projectile = this.projectiles[id];
     projectile.remove();
 
-    delete this.projectiles[data.id];
+    delete this.projectiles[id];
+  }
+
+  client_onPlayerShot (player) {
+    if (this.self.id === player.id) {
+      this.self.setHealth(player.health);
+      return;
+    }
+    
+    const otherPlayer = this.otherPlayers[player.id];
+    if (otherPlayer) {
+      otherPlayer.setHealth(player.health);
+    }
   }
 
   client_initMouseMoveHandler () {
@@ -312,8 +330,10 @@ class GameCore {
     this.fps = (1 / this.updateDeltaTime).toFixed();
 
     if (this.gameReady) {
-      this.client_handleInput();
-      this.client_handleMouseMove();
+      if (this.isPlayerAlive) {
+        this.client_handleInput();
+        this.client_handleMouseMove();
+      }
 
       this.client_updatePlayersPositions();
     }

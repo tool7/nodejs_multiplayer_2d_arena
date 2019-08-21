@@ -32,14 +32,21 @@ lobby.onClientConnected = function (client) {
 
   client.game = this.currentGame;
 
-  let players = this.currentGame.players.map(player => {
-    return { id: player.instance.playerId, position: player.body.position };
+  const players = this.currentGame.players.map(p => {
+    return {
+      id: p.instance.playerId,
+      position: p.body.position,
+      health: p.health
+    };
   });
 
-  let connectedPlayer = this.getPlayerById(client.playerId);
+  const connectedPlayer = this.getPlayerById(client.playerId);
 
   client.emit('initial-game-state', { players });
-  client.broadcast.emit('player-connected', { id: client.playerId, position: connectedPlayer.body.position });
+  client.broadcast.emit('player-connected', {
+    id: client.playerId,
+    position: connectedPlayer.body.position
+  });
 
   return true;
 };
@@ -50,8 +57,8 @@ lobby.onClientDisconnected = function (client) {
   let player = this.getPlayerById(client.playerId);
   this.freeUpPlayerSlot(player);
 
-  this.currentGame.players = this.currentGame.players.filter(player => {
-    return player.instance.playerId !== client.playerId;
+  this.currentGame.players = this.currentGame.players.filter(p => {
+    return p.instance.playerId !== client.playerId;
   });
 
   client.broadcast.emit('player-disconnected', client.playerId);
@@ -107,6 +114,8 @@ lobby.onClientInput = function (client, messageParts) {
   var inputSeq = messageParts[2];
   
   let player = this.getPlayerById(client.playerId);
+  if (!player) { return; }
+
   client.game.server_handleInput(player, inputKeys, inputSeq);
 };
 
@@ -115,6 +124,8 @@ lobby.onClientMouseMove = function (client, messageParts) {
   var mouseSeq = messageParts[2];
   
   let player = this.getPlayerById(client.playerId);
+  if (!player) { return; }
+
   client.game.server_handleMousePosition(player, mousePosition, mouseSeq);
 };
 
@@ -123,6 +134,8 @@ lobby.onClientFire = function (client, messageParts) {
   var fireTime = messageParts[2];
   
   let player = this.getPlayerById(client.playerId);
+  if (!player) { return; }
+  
   client.game.server_handleFiring(player, mousePosition, uuidv4(), fireTime);
 };
 
