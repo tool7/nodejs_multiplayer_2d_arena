@@ -27,11 +27,6 @@ class GameCore {
     this.instance = gameInstance;
     this.sharedFunctions = new SharedFunctions();
 
-    this.terrain = {
-      width: 1000,
-      height: 800
-    };
-
     this.initPhysicsSimulation();
 
     this.players = this.instance.players.map(p => { return new Player(p); });
@@ -83,8 +78,6 @@ class GameCore {
     this.players.forEach(player => {
       this.sharedFunctions.processPlayerInput(player);
       this.sharedFunctions.processPlayerAngle(player);
-
-      // this.sharedFunctions.checkPlayerMapCollision(player, this.terrain);
   
       player.inputs = [];
       player.angles = [];
@@ -97,7 +90,7 @@ class GameCore {
       projectile.move();
 
       const pojectilePosition = { x: projectile.body.position.x, y: projectile.body.position.y };
-      const isOutOfBounds = this.sharedFunctions.isPositionOutOfBounds(pojectilePosition, this.terrain);
+      const isOutOfBounds = this.sharedFunctions.isPositionOutOfBounds(pojectilePosition);
 
       if (isOutOfBounds) {
         // TODO: better way of emitting the message to everyone (instead of this.players[0])

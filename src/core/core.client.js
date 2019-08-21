@@ -344,9 +344,6 @@ class GameCore {
   client_prediction () {
     this.sharedFunctions.processPlayerInput(this.self);
     this.sharedFunctions.processPlayerAngle(this.self);
-
-    // TODO: remove?
-    // this.sharedFunctions.checkPlayerMapCollision(this.self, this.terrain);
   }
 
   client_handleInput () {
