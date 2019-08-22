@@ -11,8 +11,6 @@ html, body {
   font-family: 'Jura', sans-serif;
   font-size: 62.5%;
   color: #fff;
-  background: url("../assets/menu_background.png");
-  background-size: cover;
 }
 
 ::selection {
@@ -42,6 +40,19 @@ button.disabled:hover {
   background-color: transparent !important;
 }
 
+input {
+  font-family: inherit;
+  outline: none;
+}
+
+ul {
+  list-style-type: none;
+}
+
+li {
+  font-size: 2.5rem;
+}
+
 .hidden {
   display: none !important;
 }
@@ -50,12 +61,34 @@ button.disabled:hover {
   height: 100%;
 }
 
+.form-field {
+  width: 50%;
+  margin-bottom: 3rem;
+}
+
+.form-field > span {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.form-field > input {
+  font-size: 3rem;
+  width: 100%;
+  height: 4rem;
+}
+
 .perspective {
   perspective: 700px;
 }
 
 /* =========================== */
 /* ========== MENUS ========== */
+#menu-container {
+  background: url("../assets/menu_background.png");
+  background-size: cover;
+}
+
 #menu-box {
   position: absolute;
   display: flex;
@@ -86,6 +119,14 @@ button.disabled:hover {
   top: 16%;
   font-size: 3.5rem;
   text-transform: uppercase;
+  text-align: center;
+}
+
+.back-btn {
+  position: absolute;
+  bottom: 4rem;
+  height: 6rem;
+  width: 16rem;
 }
 
 /* ===== MAIN MENU ===== */
@@ -103,8 +144,9 @@ button.disabled:hover {
   margin-top: 3rem;
 }
 
-#main-menu > .title {
+#main-menu .title {
   font-size: 4.5rem;
+  font-weight: 100;
 }
 
 /* ===== CREATE GAME MENU ===== */
@@ -116,9 +158,9 @@ button.disabled:hover {
   height: 100%;
 }
 
-#create-game-menu__back-btn {
+#create-game-menu__create-btn {
   height: 6rem;
-  width: 18rem;
+  width: 20rem;
 }
 
 /* ===== JOIN GAME MENU ===== */
@@ -135,8 +177,23 @@ button.disabled:hover {
   width: 20rem;
 }
 
-#join-game-menu__back-btn {
-  height: 6rem;
-  width: 16rem;
-  margin-top: 3rem;
+#join-game-menu .list {
+  margin-bottom: 5rem;
+}
+
+#join-game-menu .list-item {
+  width: 36rem;
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  border-radius: 3px;
+}
+
+#join-game-menu .list-item:hover {
+  cursor: pointer;
+  background-color: rgba(36, 64, 125, .3);
+}
+
+#join-game-menu .list-item.selected {
+  background-color: rgba(36, 64, 125, .7);
 }

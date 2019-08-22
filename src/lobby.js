@@ -1,38 +1,56 @@
 const uuidv4 = require('uuid/v4');
 
+global.window = global.document = global;
+require('./core/core.server.js');
+
 let lobby = module.exports = {
   fakeLatency: 0,
   fakeLatencyMessages: [],
-  currentGame: null,
+  games: {
+    "Test game": new GameCore({ id: uuidv4(), players: [] })
+  },
   currentGameMaxPlayers: 4,
   currentGamePlayerSlots: [],
   playerCount: 0
 };
 
-global.window = global.document = global;
-require('./core/core.server.js');
+lobby.getGames = function () {
+  return Object.keys(this.games);
+};
 
-// TODO: refactor because of multiple games possibility
-lobby.onClientConnected = function (client) {
-  if (!this.currentGame) {
-    this.currentGame = new GameCore({ id: uuidv4(), players: [] });
-    this.currentGame.start();
-  }
+lobby.createGame = function (data) {
+  const { name, password } = data;
 
-  if (this.playerCount >= this.currentGameMaxPlayers) {
-    client.emit('game-full');
+  if (this.games[name]) {
     return false;
   }
-  
-  const addedPlayer = this.currentGame.server_addPlayer(client);
-  const slotIndex = this.putPlayerToFreeSlot(addedPlayer);
 
-  this.setPlayerPositionBySlotIndex(addedPlayer, slotIndex);
-  this.playerCount++;
+  // TODO: Implement password functionality
 
-  client.game = this.currentGame;
+  this.games[name] = new GameCore({ id: uuidv4(), players: [] });
+  return true;
+};
 
-  const players = this.currentGame.players.map(p => {
+// TODO: refactor because of multiple games possibility
+lobby.onClientGameRequest = function (client, gameName) {
+  const game = this.games[gameName];
+  if (!game || this.playerCount >= this.currentGameMaxPlayers) { return false; }
+
+  game.start();
+  client.game = game;
+
+  const isPlayerAdded = this.putPlayerToFreeSlot(client);
+  if (!isPlayerAdded) {
+    return false;
+  }
+  return true;
+};
+
+lobby.joinGame = function (client, gameName) {
+  const game = this.games[gameName];
+  if (!game) { return false; }
+
+  const players = game.players.map(p => {
     return {
       id: p.instance.playerId,
       position: p.body.position,
@@ -40,7 +58,7 @@ lobby.onClientConnected = function (client) {
     };
   });
 
-  const connectedPlayer = this.getPlayerById(client.playerId);
+  const connectedPlayer = this.getPlayerById(client);
 
   client.emit('initial-game-state', { players });
   client.broadcast.emit('player-connected', {
@@ -51,13 +69,16 @@ lobby.onClientConnected = function (client) {
   return true;
 };
 
-lobby.onClientDisconnected = function (client) {
+lobby.onClientDisconnected = function (client, gameName) {
+  const game = this.games[gameName];
+  if (!game) { return; }
+
   this.playerCount--;
 
-  let player = this.getPlayerById(client.playerId);
+  let player = this.getPlayerById(client);
   this.freeUpPlayerSlot(player);
 
-  this.currentGame.players = this.currentGame.players.filter(p => {
+  game.players = game.players.filter(p => {
     return p.instance.playerId !== client.playerId;
   });
 
@@ -113,7 +134,7 @@ lobby.onClientInput = function (client, messageParts) {
   let inputKeys = messageParts[1].split('-');
   var inputSeq = messageParts[2];
   
-  let player = this.getPlayerById(client.playerId);
+  let player = this.getPlayerById(client);
   if (!player) { return; }
 
   client.game.server_handleInput(player, inputKeys, inputSeq);
@@ -123,7 +144,7 @@ lobby.onClientMouseMove = function (client, messageParts) {
   let mousePosition = messageParts[1].split('-');
   var mouseSeq = messageParts[2];
   
-  let player = this.getPlayerById(client.playerId);
+  let player = this.getPlayerById(client);
   if (!player) { return; }
 
   client.game.server_handleMousePosition(player, mousePosition, mouseSeq);
@@ -133,28 +154,42 @@ lobby.onClientFire = function (client, messageParts) {
   let mousePosition = messageParts[1].split('-');
   var fireTime = messageParts[2];
   
-  let player = this.getPlayerById(client.playerId);
+  let player = this.getPlayerById(client);
   if (!player) { return; }
   
   client.game.server_handleFiring(player, mousePosition, uuidv4(), fireTime);
 };
 
-lobby.getPlayerById = function (id) {
-  let player = this.currentGame.players.find(player => {
-    return player.instance.playerId === id;
+lobby.getPlayerById = function (client) {
+  const { playerId, game } = client;
+
+  let player = game.players.find(player => {
+    return player.instance.playerId === playerId;
   });
 
   return player;
 };
 
-lobby.putPlayerToFreeSlot = function (player) {
+lobby.putPlayerToFreeSlot = function (client) {
+  const player = client.game.server_addPlayer(client);
+  let slotIndex = -1;
+
   for (let i = 0; i < this.currentGameMaxPlayers; i++) {
     if (!this.currentGamePlayerSlots[i]) {
       this.currentGamePlayerSlots[i] = player;
-      return i;
+      slotIndex = i;
+      break;
     }
   }
-  return -1;
+
+  if (slotIndex === -1) {
+    return false;
+  }
+
+  this.setPlayerPositionBySlotIndex(player, slotIndex);
+  this.playerCount++;
+
+  return true;
 };
 
 lobby.freeUpPlayerSlot = function (player) {

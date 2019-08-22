@@ -2,7 +2,8 @@
 
 class GameCore {
 
-  constructor () {
+  constructor (socket, playerId) {
+    this.socket = socket;
     this.sharedFunctions = new SharedFunctions();
 
     this.terrain = {
@@ -11,6 +12,7 @@ class GameCore {
     };
 
     this.gameReady = false;
+    this.playerId = playerId;
     this.isPlayerAlive = true;
 
     this.updateDeltaTime = new Date().getTime();
@@ -62,16 +64,17 @@ class GameCore {
     const bgTexture = PIXI.loader.resources["assets/background.jpg"].texture;
     const croppedBgTexture = new PIXI.Texture(bgTexture, new PIXI.Rectangle(0, 0, this.terrain.width, this.terrain.height));
     const background = new PIXI.Sprite(croppedBgTexture);
+
     this.app.stage.addChild(background);
 
-    this.client_connectToServer();
-    this.client_createPingTimer();
-
     this.self = new Player(this, false);
+    this.self.id = this.playerId;
     this.self.registerEventListener("player-death", () => {
       this.isPlayerAlive = false;
     });
 
+    this.client_initConnectionHandlers();
+    this.client_createPingTimer();
     this.client_initMouseMoveHandler();
     this.client_initMouseClickHandler();
 
@@ -136,26 +139,19 @@ class GameCore {
     generalSettings.open();
   }
 
-  client_connectToServer () {
-    this.socket = io.connect();
-
-    this.socket.on('onconnected', this.client_onConnected.bind(this));
-
+  client_initConnectionHandlers () {
     this.socket.on('initial-game-state', this.client_initGameState.bind(this));
     this.socket.on('player-connected', this.client_onPlayerConnected.bind(this));
     this.socket.on('player-disconnected', this.client_onPlayerDisconnected.bind(this));
 
     this.socket.on('server-update', this.client_onServerUpdateReceived.bind(this));
     this.socket.on('message', this.client_onServerMessage.bind(this));
-    this.socket.on('game-full', this.client_onGameFull.bind(this));
 
     this.socket.on('projectile-created', this.client_onProjectileCreated.bind(this));
     this.socket.on('projectile-destroyed', this.client_onProjectileDestroyed.bind(this));
     this.socket.on('player-shot', this.client_onPlayerShot.bind(this));
-  }
 
-  client_onGameFull () {
-    alert("Game full, try again later.");
+    this.socket.emit('init-complete');
   }
 
   client_createPingTimer () {
@@ -245,10 +241,6 @@ class GameCore {
 
     this.self.rotateTo(selfAngleOnServer);
     this.self.lastAngleSeq = lastAngleSeqIndex;
-  }
-
-  client_onConnected (data) {
-    this.self.id = data.id;
   }
 
   client_initGameState (data) {
