@@ -37,7 +37,8 @@ class GameCore {
       resolution: 1
     });
 
-    document.body.appendChild(this.app.view);
+    const gameContainer = document.getElementById("game");
+    gameContainer.appendChild(this.app.view);
 
     this.loadTextures();
     this.loadSounds();

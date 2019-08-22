@@ -1,0 +1,142 @@
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Jura', sans-serif;
+  font-size: 62.5%;
+  color: #fff;
+  background: url("../assets/menu_background.png");
+  background-size: cover;
+}
+
+::selection {
+  background-color: black;
+  color: white;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  border-radius: 3px;
+  font-size: 1.75rem;
+  color: white;
+}
+
+button.disabled {
+  cursor: default;
+  color: gray;
+  border-color: gray !important;
+  pointer-events: none;
+}
+
+button.disabled:hover {
+  background-color: transparent !important;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.container {
+  height: 100%;
+}
+
+.perspective {
+  perspective: 700px;
+}
+
+/* =========================== */
+/* ========== MENUS ========== */
+#menu-box {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 80rem;
+  height: 80rem;
+  top: 50%;
+  left: 50%;
+  background: rgba(36, 64, 125, .3);
+  border: 1px solid #fff;
+  border-radius: 3px;
+  transform: translate(-50%, -50%);
+}
+
+#menu-box * button {
+  background-color: transparent;
+  border: 1px solid #fff;
+  transform: skew(-6deg);
+}
+
+#menu-box * button:hover {
+  background-color: rgba(36, 64, 125, .3);
+}
+
+.title {
+  position: absolute;
+  top: 16%;
+  font-size: 3.5rem;
+  text-transform: uppercase;
+}
+
+/* ===== MAIN MENU ===== */
+#main-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#main-menu > button {
+  height: 8rem;
+  width: 22rem;
+  margin-top: 3rem;
+}
+
+#main-menu > .title {
+  font-size: 4.5rem;
+}
+
+/* ===== CREATE GAME MENU ===== */
+#create-game-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#create-game-menu__back-btn {
+  height: 6rem;
+  width: 18rem;
+}
+
+/* ===== JOIN GAME MENU ===== */
+#join-game-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#join-game-menu__join-btn {
+  height: 6rem;
+  width: 20rem;
+}
+
+#join-game-menu__back-btn {
+  height: 6rem;
+  width: 16rem;
+  margin-top: 3rem;
+}

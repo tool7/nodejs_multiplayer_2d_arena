@@ -6,6 +6,9 @@
     
   <script src="/socket.io/socket.io.js"></script>
 
+  <link href="https://fonts.googleapis.com/css?family=Jura&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/styles.css">
+
   <script type="text/javascript" src="lib/dat.gui.min.js"></script>
   <script type="text/javascript" src="lib/keyboard.js"></script>
   <script type="text/javascript" src="lib/pixi.min.js"></script>
@@ -19,17 +22,39 @@
   
   <script type="text/javascript" src="src/client.js"></script>
 
-  <style>
-    html, body {
-      background: grey;
-      color: #fff; 
-      font-family: Helvetica;
-      margin: 0; 
-      padding: 0;
-    }
-  </style>
-
 </head>
 <body>
+
+  <div class="container perspective">
+
+    <div id="menu-box">
+      <div id="main-menu">
+        <h2 class="title">Space Shooter</h2>
+        <button id="main-menu__create-btn">Create game</button>
+        <button id="main-menu__join-btn">Join game</button>
+      </div>
+  
+      <div id="create-game-menu" class="hidden">
+        <h2 class="title">Create game</h2>
+        <button id="create-game-menu__back-btn">Back</button>
+      </div>
+  
+      <div id="join-game-menu" class="hidden">
+        <h2 class="title">Join game</h2>
+        <button id="join-game-menu__join-btn">Join</button>
+        <button id="join-game-menu__back-btn">Back</button>
+      </div>
+    </div>
+  
+    <div id="exit-game-modal" class="hidden">
+      <h2 class="title">Exit game?</h2>
+      <button id="exit-game-modal__yes-btn">Yes</button>
+      <button id="exit-game-modal__no-btn">No</button>
+    </div>
+
+  </div>
+
+  <div id="game"></div>
+
 </body>
 </html>
