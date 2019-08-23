@@ -5,8 +5,8 @@ const playerWidth = 40;
 
 class Player {
 
-  constructor (playerInstance) {
-    this.instance = playerInstance;
+  constructor (id) {
+    this.id = id;
 
     this.inputs = [];
     this.angles = [];

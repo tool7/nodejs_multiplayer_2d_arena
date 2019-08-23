@@ -5,7 +5,7 @@ const io = require('socket.io')(server);
 const uuidv4 = require('uuid/v4');
 const bodyParser = require('body-parser');
 
-const lobby = require('./src/lobby.js');
+const lobby = require('./src/lobby.js')(io);
 
 app.use('/', express.static(__dirname));
 app.use(bodyParser.json());
@@ -30,12 +30,14 @@ server.listen(3000, () => {
   console.log('listening on *:3000');
 });
 
-io.on('connection', socket => {  
+io.on('connection', socket => {
   socket.playerId = uuidv4();
 
   socket.on('game-request', gameName => {
     const isGameAvailable = lobby.onClientGameRequest(socket, gameName);
+
     if (isGameAvailable) {
+      socket.join(gameName);
       socket.emit('connection-success', { id: socket.playerId });
     }
     else {

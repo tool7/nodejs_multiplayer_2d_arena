@@ -187,8 +187,10 @@ class GameCore {
       this.serverUpdates.splice(0, 1);
     }
 
-    this.client_processInputPredictionCorrection();
-    this.client_processAnglePredictionCorrection();
+    if (this.isPlayerAlive) {
+      this.client_processInputPredictionCorrection();
+      this.client_processAnglePredictionCorrection();
+    }
   }
 
   client_processInputPredictionCorrection () {

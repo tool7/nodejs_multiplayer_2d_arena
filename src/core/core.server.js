@@ -23,13 +23,21 @@ require('./../entities/projectile.server.js');
 
 class GameCore {
 
-  constructor (gameInstance) {
-    this.instance = gameInstance;
+  constructor (data) {
+    // Note: If *this.io.to(GAME_ROOM)* is passed to constructor or put it in a variable,
+    // using it to emit events will not work properly.
+    // So instead it must be used as *this.io.to(this.gameRoom).emit('EVENT');*
+    this.io = data.io;
+    this.gameRoom = data.gameRoom;
+
     this.sharedFunctions = new SharedFunctions();
+    this.isStarted = false;
 
-    this.initPhysicsSimulation();
-
-    this.players = this.instance.players.map(p => { return new Player(p); });
+    // TODO: REMOVE???
+    // this.initPhysicsSimulation();
+    // this.players = data.players.map(p => { return new Player(p); });
+    
+    this.players = [];
     this.projectiles = [];
   }
 
@@ -41,6 +49,9 @@ class GameCore {
   }
 
   start () {
+    this.isStarted = true;
+
+    this.initPhysicsSimulation();
     this.server_update();
   }
 
@@ -49,8 +60,8 @@ class GameCore {
   }
   // ====================================
 
-  server_addPlayer (client) {
-    let player = new Player(client);
+  server_addPlayer (playerId) {
+    let player = new Player(playerId);
     this.players.push(player);
     return player;
   }
@@ -58,7 +69,7 @@ class GameCore {
   server_update () {
     const playerData = this.players.map(player => {
       return {
-        id: player.instance.playerId,
+        id: player.id,
         position: Object.assign({}, player.body.position),
         rotation: player.body.rotation,
         lastInputSeq: +player.lastInputSeq,
@@ -67,9 +78,7 @@ class GameCore {
     });
 
     const dataToSend = this.sharedFunctions.encodeWorldSnapshotData({ players: playerData });
-    this.players.forEach(player => {
-      player.instance.emit('server-update', dataToSend);
-    });
+    this.io.to(this.gameRoom).emit('server-update', dataToSend);
 
     this.updateId = window.requestAnimationFrame(this.server_update.bind(this));
   }
@@ -93,9 +102,7 @@ class GameCore {
       const isOutOfBounds = this.sharedFunctions.isPositionOutOfBounds(pojectilePosition);
 
       if (isOutOfBounds) {
-        // TODO: better way of emitting the message to everyone (instead of this.players[0])
-        this.players[0] && this.players[0].instance.emit('projectile-destroyed', projectile.id);
-        this.players[0] && this.players[0].instance.broadcast.emit('projectile-destroyed', projectile.id);
+        this.io.to(this.gameRoom).emit('projectile-destroyed', projectile.id);
 
         this.projectiles.splice(projectileIndex, 1);
       }
@@ -122,7 +129,7 @@ class GameCore {
 
     const options = {
       id: projectileId,
-      playerId: player.instance.playerId,
+      playerId: player.id,
       startingPosition: Object.assign({}, player.body.position),
       angle: this.sharedFunctions.angleBetweenPoints(player.body.position, { x, y }),
       velocity: 3,
@@ -132,8 +139,7 @@ class GameCore {
     const projectile = new Projectile(options);
     this.projectiles.push(projectile);
 
-    player.instance.emit('projectile-created', options);
-    player.instance.broadcast.emit('projectile-created', options);
+    this.io.to(this.gameRoom).emit('projectile-created', options);
   }
 
   server_handleCollisions () {
@@ -142,7 +148,7 @@ class GameCore {
 
       while (projectileIndex--) {
         const projectile = this.projectiles[projectileIndex];
-        if (projectile.playerId === player.instance.playerId) { continue; }
+        if (projectile.playerId === player.id) { continue; }
 
         const isCollision = this.server_isPlayerProjectileCollision(player.body.boundingBox, projectile.body.boundingBox);
 
@@ -152,15 +158,13 @@ class GameCore {
             this.server_onPlayerDeath(player);
           }
 
-          player.instance.emit('projectile-destroyed', projectile.id);
-          player.instance.broadcast.emit('projectile-destroyed', projectile.id);
-
           const shotPlayerData = {
-            id: player.instance.playerId,
+            id: player.id,
             health: player.health
           };
-          player.instance.emit('player-shot', shotPlayerData);
-          player.instance.broadcast.emit('player-shot', shotPlayerData);
+
+          this.io.to(this.gameRoom).emit('projectile-destroyed', projectile.id);
+          this.io.to(this.gameRoom).emit('player-shot', shotPlayerData);
 
           this.projectiles.splice(projectileIndex, 1);
         }
@@ -173,7 +177,7 @@ class GameCore {
   }
 
   server_onPlayerDeath (player) {
-    this.players = this.players.filter(p => p.instance.id !== player.instance.id);
+    this.players = this.players.filter(p => p.id !== player.id);
   }
 }
 
