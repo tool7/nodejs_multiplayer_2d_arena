@@ -116,7 +116,7 @@ li {
 
 .title {
   position: absolute;
-  top: 16%;
+  top: 10%;
   font-size: 3.5rem;
   text-transform: uppercase;
   text-align: center;
@@ -138,15 +138,38 @@ li {
   height: 100%;
 }
 
-#main-menu > button {
-  height: 8rem;
-  width: 22rem;
-  margin-top: 3rem;
+#main-menu .title {
+  font-size: 5rem;
+  font-weight: 100;
 }
 
-#main-menu .title {
-  font-size: 4.5rem;
+#main-menu__continue-btn {
+  position: absolute;
+  bottom: 6rem;
+  height: 10rem;
+  width: 24rem;
+  font-size: 2.5rem;
+}
+
+/* ===== CREATE JOIN CHOICE MENU ===== */
+#create-join-choice-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#create-join-choice-menu .title {
+  font-size: 5rem;
   font-weight: 100;
+}
+
+#create-join-choice-menu__create-btn, #create-join-choice-menu__join-btn {
+  height: 12rem;
+  width: 32rem;
+  margin-top: 4rem;
+  font-size: 2.5rem;
 }
 
 /* ===== CREATE GAME MENU ===== */

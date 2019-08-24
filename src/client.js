@@ -1,4 +1,5 @@
 let state = {
+  playerName: "",
   createMenu: {
     enteredGameName: "",
     enteredGamePassword: ""
@@ -11,6 +12,7 @@ let state = {
 
 window.onload = function () {
 
+  initMenuSounds();
   setupMenuBoxAnimation();
   setupMenuEventHandlers();
 
@@ -58,14 +60,26 @@ const getAvailableGames = async () => {
     });
 };
 
+const initMenuSounds = () => {
+  const menuButtons = document.querySelectorAll("button");
+
+  createjs.Sound.registerSound("sounds/button-click.mp3", "btn-click");
+  createjs.Sound.registerSound("sounds/button-hover.mp3", "btn-hover");
+
+  menuButtons.forEach(button => {
+    button.onmouseenter = () => createjs.Sound.play("btn-hover");
+    button.onclick = () => createjs.Sound.play("btn-click");
+  });
+};
+
 const setupMenuBoxAnimation = () => {
   const menuBox = document.getElementById("menu-box");
   const screenWidth = document.body.clientWidth;
   const screenHeight = document.body.clientHeight;
 
   const originPosition = {
-    x: screenWidth / 2,
-    y: screenHeight / 2
+    x: screenWidth * 0.5,
+    y: screenHeight * 0.7
   };
 
   const updateTransformStyle = (x, y) => {
@@ -82,8 +96,12 @@ const setupMenuBoxAnimation = () => {
 
 const setupMenuEventHandlers = () => {
   const mainMenu = document.getElementById("main-menu");
-  const mainMenuCreateButton = document.getElementById("main-menu__create-btn");
-  const mainMenuJoinButton = document.getElementById("main-menu__join-btn");
+  const mainMenuPlayerNameInput = document.getElementById("main-menu__player-name-input");
+  const mainMenuContinueButton = document.getElementById("main-menu__continue-btn");
+  const createJoinChoiceMenu = document.getElementById("create-join-choice-menu");
+  const createJoinChoiceMenuCreateButton = document.getElementById("create-join-choice-menu__create-btn");
+  const createJoinChoiceMenuJoinButton = document.getElementById("create-join-choice-menu__join-btn");
+  const createJoinChoiceMenuBackButton = document.getElementById("create-join-choice-menu__back-btn");
   const createGameMenu = document.getElementById("create-game-menu");
   const createGameMenuGameNameInput = document.getElementById("create-game-menu__game-name-input");
   const createGameMenuGamePasswordInput = document.getElementById("create-game-menu__game-password-input");
@@ -94,18 +112,40 @@ const setupMenuEventHandlers = () => {
   const joinGameMenuJoinButton = document.getElementById("join-game-menu__join-btn");
   const joinGameMenuGamePasswordField = document.getElementById("join-game-menu__game-password-field");
 
-  mainMenuCreateButton.addEventListener("click", () => {
+  mainMenuPlayerNameInput.addEventListener("keyup", e => {
+    if (!e.target.value) {
+      mainMenuContinueButton.classList.add("disabled");
+      return;
+    }
+
+    state.playerName = e.target.value;
+    mainMenuContinueButton.classList.remove("disabled");
+  });
+
+  mainMenuContinueButton.addEventListener("click", () => {
     mainMenu.classList.add("hidden");
+    createJoinChoiceMenu.classList.remove("hidden");
+
+    storePlayerName();
+  });
+
+  createJoinChoiceMenuCreateButton.addEventListener("click", () => {
+    createJoinChoiceMenu.classList.add("hidden");
     createGameMenu.classList.remove("hidden");
   });
 
-  mainMenuJoinButton.addEventListener("click", async () => {
+  createJoinChoiceMenuJoinButton.addEventListener("click", async () => {
     await getAvailableGames();
 
-    mainMenu.classList.add("hidden");
+    createJoinChoiceMenu.classList.add("hidden");
     joinGameMenu.classList.remove("hidden");
     joinGameMenuGamePasswordField.classList.add("hidden");
     joinGameMenuJoinButton.classList.add("disabled");
+  });
+
+  createJoinChoiceMenuBackButton.addEventListener("click", () => {
+    createJoinChoiceMenu.classList.add("hidden");
+    mainMenu.classList.remove("hidden");
   });
 
   createGameMenuGameNameInput.addEventListener("keyup", e => {
@@ -139,22 +179,26 @@ const setupMenuEventHandlers = () => {
     state.createMenu.enteredGameName = "";
     state.joinMenu.enteredGamePassword = "";
 
-    mainMenu.classList.remove("hidden");
+    createJoinChoiceMenu.classList.remove("hidden");
     createGameMenu.classList.add("hidden");
     createGameMenuCreateButton.classList.add("disabled");
   });
 
   createGameMenuBackButton.addEventListener("click", () => {
-    mainMenu.classList.remove("hidden");
+    createJoinChoiceMenu.classList.remove("hidden");
     createGameMenu.classList.add("hidden");
   });
 
   joinGameMenuBackButton.addEventListener("click", () => {
-    mainMenu.classList.remove("hidden");
+    createJoinChoiceMenu.classList.remove("hidden");
     joinGameMenu.classList.add("hidden");
   });
 
   joinGameMenuJoinButton.addEventListener("click", onJoinGameClick);
+};
+
+const storePlayerName = () => {
+  localStorage.setItem("player-name", state.playerName);
 };
 
 const onJoinGameClick = async () => {
