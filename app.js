@@ -33,11 +33,11 @@ server.listen(3000, () => {
 io.on('connection', socket => {
   socket.playerId = uuidv4();
 
-  socket.on('game-request', gameName => {
-    const isGameAvailable = lobby.onClientGameRequest(socket, gameName);
+  socket.on('game-request', data => {
+    const isGameAvailable = lobby.onClientGameRequest(socket, data);
 
     if (isGameAvailable) {
-      socket.join(gameName);
+      socket.join(data.name);
       socket.emit('connection-success', { id: socket.playerId });
     }
     else {
@@ -46,7 +46,7 @@ io.on('connection', socket => {
     }
 
     socket.on('init-complete', () => {
-      const isJoined = lobby.joinGame(socket, gameName);
+      const isJoined = lobby.joinGame(socket, data.name);
       if (!isJoined) {
         socket.emit('connection-fail');
       }
@@ -59,7 +59,7 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
       console.log("socket.io:: player " + socket.playerId + " disconnected");
   
-      lobby.onClientDisconnected(socket, gameName);
+      lobby.onClientDisconnected(socket, data.name);
     });
   });
 

@@ -40,11 +40,11 @@
 
         <div class="form-field">
           <span>Room name:</span>
-          <input id="game-name-input" type="text">
+          <input id="create-game-menu__game-name-input" type="text">
         </div>
         <div class="form-field">
           <span>Password (optional):</span>
-          <input id="game-password-input" type="text">
+          <input id="create-game-menu__game-password-input" type="text">
         </div>
 
         <button id="create-game-menu__create-btn" class="disabled">Create</button>
@@ -54,6 +54,11 @@
       <div id="join-game-menu" class="hidden">
         <h2 class="title">Join game</h2>
         <ul class="list"></ul>
+
+        <div id="join-game-menu__game-password-field" class="form-field hidden">
+          <span>Password:</span>
+          <input type="text">
+        </div>
 
         <button id="join-game-menu__join-btn" class="disabled">Join</button>
         <button id="join-game-menu__back-btn" class="back-btn">Back</button>

@@ -172,7 +172,14 @@ li {
   height: 100%;
 }
 
+#join-game-menu__game-password-field {
+  position: absolute;
+  bottom: 18rem;
+}
+
 #join-game-menu__join-btn {
+  position: absolute;
+  bottom: 12.5rem;
   height: 6rem;
   width: 20rem;
 }
