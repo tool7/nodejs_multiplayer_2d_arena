@@ -2,18 +2,19 @@
 
 class GameCore {
 
-  constructor (socket, playerId) {
+  constructor (socket, playerId, playerName) {
     this.socket = socket;
+    this.playerId = playerId;
+    this.playerName = playerName;
+
     this.sharedFunctions = new SharedFunctions();
+    this.gameReady = false;
+    this.isPlayerAlive = true;
 
     this.terrain = {
       width: 1000,
       height: 800
     };
-
-    this.gameReady = false;
-    this.playerId = playerId;
-    this.isPlayerAlive = true;
 
     this.updateDeltaTime = new Date().getTime();
     this.updateDeltaTimeLast = new Date().getTime();
@@ -67,7 +68,7 @@ class GameCore {
 
     this.app.stage.addChild(background);
 
-    this.self = new Player(this, false);
+    this.self = new Player(this.app, this.playerName, false);
     this.self.id = this.playerId;
     this.self.registerEventListener("player-death", () => {
       this.isPlayerAlive = false;
@@ -252,7 +253,7 @@ class GameCore {
     this.self.setInitialPosition(selfData.position);
 
     this.otherPlayers = otherPlayersData.reduce((obj, p) => {
-      const player = new Player(this, true);
+      const player = new Player(this.app, p.name, true);
       player.setInitialPosition(p.position);
       player.setHealth(p.health);
 
@@ -262,7 +263,7 @@ class GameCore {
   }
 
   client_onPlayerConnected (data) {
-    const player = new Player(this, true);
+    const player = new Player(this.app, data.name, true);
     player.setInitialPosition(data.position);
 
     this.otherPlayers[data.id] = player;

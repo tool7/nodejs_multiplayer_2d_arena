@@ -71,6 +71,7 @@ module.exports = io => {
     const players = game.instance.players.map(p => {
       return {
         id: p.id,
+        name: p.name,
         position: p.body.position,
         health: p.health
       };
@@ -83,6 +84,7 @@ module.exports = io => {
     // Sending to all connected clients except the current client who joins the game
     client.to(gameName).emit('player-connected', {
       id: client.playerId,
+      name: client.playerName,
       position: connectedPlayer.body.position
     });
   
@@ -191,7 +193,7 @@ module.exports = io => {
   };
   
   this.putPlayerToFreeSlot = function (client) {
-    const player = client.gameInstance.server_addPlayer(client.playerId);
+    const player = client.gameInstance.server_addPlayer(client);
     let slotIndex = -1;
   
     for (let i = 0; i < this.currentGameMaxPlayers; i++) {

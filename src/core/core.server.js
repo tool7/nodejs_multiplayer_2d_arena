@@ -32,11 +32,6 @@ class GameCore {
 
     this.sharedFunctions = new SharedFunctions();
     this.isStarted = false;
-
-    // TODO: REMOVE???
-    // this.initPhysicsSimulation();
-    // this.players = data.players.map(p => { return new Player(p); });
-    
     this.players = [];
     this.projectiles = [];
   }
@@ -60,9 +55,10 @@ class GameCore {
   }
   // ====================================
 
-  server_addPlayer (playerId) {
-    let player = new Player(playerId);
+  server_addPlayer (data) {
+    const player = new Player(data.playerId, data.playerName);
     this.players.push(player);
+    
     return player;
   }
 

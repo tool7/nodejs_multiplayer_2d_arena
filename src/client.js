@@ -34,6 +34,8 @@ const onGameListItemClicked = e => {
   if (listItem.isPasswordLocked) {
     joinGameMenuGamePasswordField.classList.remove("hidden");
   }
+
+  createjs.Sound.play("btn-click").volume = 0.3;
 };
 
 const getAvailableGames = async () => {
@@ -67,8 +69,12 @@ const initMenuSounds = () => {
   createjs.Sound.registerSound("sounds/button-hover.mp3", "btn-hover");
 
   menuButtons.forEach(button => {
-    button.onmouseenter = () => createjs.Sound.play("btn-hover");
-    button.onclick = () => createjs.Sound.play("btn-click");
+    button.onmouseenter = () => {
+      createjs.Sound.play("btn-hover").volume = 0.5;
+    };
+    button.onclick = () => {
+      createjs.Sound.play("btn-click").volume = 0.3;
+    };
   });
 };
 
@@ -224,13 +230,14 @@ const startGame = () => {
     const socket = io.connect();
     socket.emit("game-request", {
       name: state.joinMenu.selectedGameName,
-      password: state.joinMenu.enteredGamePassword
+      password: state.joinMenu.enteredGamePassword,
+      playerName: state.playerName
     });
   
     socket.on("connection-success", data => {
       resolve();
 
-      const game = new GameCore(socket, data.id);
+      const game = new GameCore(socket, data.id, state.playerName);
       game.start();
     });
   

@@ -1,14 +1,15 @@
 const playerHeight = 40;
 const playerWidth = 40;
-const healthbarWidth = 64;
+const healthbarWidth = 80;
 const healthbarHeight = 5;
 
 class Player extends SimpleEventEmitter {
 
-  constructor (gameInstance, isEnemy) {
+  constructor (app, name, isEnemy) {
     super();
 
-    this.game = gameInstance;
+    this.app = app;
+    this.name = name;
 
     this.inputs = [];
     this.angles = [];
@@ -19,19 +20,26 @@ class Player extends SimpleEventEmitter {
     this.velocity = 2;
 
     const textureName = isEnemy ? "enemy_ship" : "player_ship";
-    let texture = PIXI.loader.resources[`assets/${ textureName }.png`].texture;
+    const texture = PIXI.loader.resources[`assets/${ textureName }.png`].texture;
 
     this.body = new PIXI.Sprite(texture);
     this.body.width = playerWidth;
     this.body.height = playerHeight;
     this.body.anchor.x = 0.5;
     this.body.anchor.y = 0.5;
+    
+    this.playerNameText = new PIXI.Text(this.name, new PIXI.TextStyle({
+      fontFamily: "Jura",
+      fontSize: 14,
+      fill: "#ffffff"
+    }));
 
     this.healthbar = new PIXI.Graphics();
     this.drawHealthbar();
 
-    this.game.app.stage.addChild(this.body);
-    this.game.app.stage.addChild(this.healthbar);
+    this.app.stage.addChild(this.body);
+    this.app.stage.addChild(this.playerNameText);
+    this.app.stage.addChild(this.healthbar);
   }
 
   setInitialPosition (position) {
@@ -96,11 +104,17 @@ class Player extends SimpleEventEmitter {
       }
     });
 
-    this.body.x += x * this.velocity;
-    this.body.y += y * this.velocity;
+    const xOffset = x * this.velocity;
+    const yOffset = y * this.velocity;
 
-    this.healthbar.x += x * this.velocity;
-    this.healthbar.y += y * this.velocity;
+    this.body.x += xOffset;
+    this.body.y += yOffset;
+
+    this.playerNameText.x += xOffset;
+    this.playerNameText.y += yOffset;
+
+    this.healthbar.x += xOffset;
+    this.healthbar.y += yOffset;
   }
 
   moveTo (position) {
@@ -109,8 +123,11 @@ class Player extends SimpleEventEmitter {
     this.body.x = x;
     this.body.y = y;
 
-    this.healthbar.x = this.body.x - (healthbarWidth * 0.5);
-    this.healthbar.y = this.body.y - playerHeight;
+    this.playerNameText.x = x - (healthbarWidth * 0.5);
+    this.playerNameText.y = y - playerHeight - 20;
+
+    this.healthbar.x = x - (healthbarWidth * 0.5);
+    this.healthbar.y = y - playerHeight;
   }
 
   rotateTo (radians) {
@@ -118,7 +135,8 @@ class Player extends SimpleEventEmitter {
   }
 
   remove () {
-    this.game.app.stage.removeChild(this.body);
-    this.game.app.stage.removeChild(this.healthbar);
+    this.app.stage.removeChild(this.body);
+    this.app.stage.removeChild(this.playerNameText);
+    this.app.stage.removeChild(this.healthbar);
   }
 }

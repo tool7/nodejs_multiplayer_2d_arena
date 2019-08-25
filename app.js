@@ -34,6 +34,8 @@ io.on('connection', socket => {
   socket.playerId = uuidv4();
 
   socket.on('game-request', data => {
+    socket.playerName = data.playerName;
+
     const isGameAvailable = lobby.onClientGameRequest(socket, data);
 
     if (isGameAvailable) {
