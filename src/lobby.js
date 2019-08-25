@@ -3,22 +3,20 @@ const uuidv4 = require('uuid/v4');
 global.window = global.document = global;
 require('./core/core.server.js');
 
-module.exports = io => {
-  this.io = io;
-
-  this.fakeLatency = 0;
-  this.fakeLatencyMessages = [];
-  this.games = {
+module.exports = {
+  fakeLatency: 0,
+  fakeLatencyMessages: [],
+  games: {
     'Test game': {
-      instance: new GameCore({ io: this.io, gameRoom: 'Test game' }),
+      instance: new GameCore({ gameRoom: 'Test game' }),
       password: null
     }
-  };
-  this.currentGameMaxPlayers = 4;
-  this.currentGamePlayerSlots = [];
-  this.playerCount = 0;
+  },
+  currentGameMaxPlayers: 4,
+  currentGamePlayerSlots: [],
+  playerCount: 0,
 
-  this.getGames = function () {
+  getGames () {
     return Object.keys(this.games)
       .map(name => {
         return {
@@ -26,9 +24,9 @@ module.exports = io => {
           isPasswordLocked: !!this.games[name].password
         };
       });
-  };
+  },
   
-  this.createGame = function (data) {
+  createGame (data) {
     const { name, password } = data;
   
     if (this.games[name]) {
@@ -36,14 +34,14 @@ module.exports = io => {
     }  
     
     this.games[name] = {
-      instance: new GameCore({ io: this.io, gameRoom: name }),
+      instance: new GameCore({ gameRoom: name }),
       password
     };
 
     return true;
-  };
+  },
   
-  this.onClientGameRequest = function (client, data) {
+  onClientGameRequest (client, data) {
     const game = this.games[data.name];
     if (!game
       || this.playerCount >= this.currentGameMaxPlayers
@@ -58,9 +56,9 @@ module.exports = io => {
       return false;
     }
     return true;
-  };
+  },
   
-  this.joinGame = function (client, gameName) {
+  joinGame (client, gameName) {
     const game = this.games[gameName];
     if (!game) { return false; }
   
@@ -89,9 +87,9 @@ module.exports = io => {
     });
   
     return true;
-  };
+  },
   
-  this.onClientDisconnected = function (client, gameName) {
+  onClientDisconnected (client, gameName) {
     const game = this.games[gameName];
     if (!game) { return; }
   
@@ -105,9 +103,9 @@ module.exports = io => {
     });
   
     client.to(gameName).emit('player-disconnected', client.playerId);
-  };
+  },
   
-  this.onMessage = function (client, message) {
+  onMessage (client, message) {
     let messageParts = message.split('.');
     let messageType = messageParts[0];
   
@@ -127,9 +125,9 @@ module.exports = io => {
     else {
       this._onMessage(client, message);
     }
-  };
+  },
   
-  this._onMessage = function (client, message) {
+  _onMessage (client, message) {
     let messageParts = message.split('.');
     let messageType = messageParts[0];
   
@@ -150,9 +148,9 @@ module.exports = io => {
         this.fakeLatency = parseFloat(messageParts[1]);
         break;
     }
-  };
+  },
   
-  this.onClientInput = function (client, messageParts) {
+  onClientInput (client, messageParts) {
     let inputKeys = messageParts[1].split('-');
     var inputSeq = messageParts[2];
     
@@ -160,9 +158,9 @@ module.exports = io => {
     if (!player) { return; }
   
     client.gameInstance.server_handleInput(player, inputKeys, inputSeq);
-  };
+  },
   
-  this.onClientMouseMove = function (client, messageParts) {
+  onClientMouseMove (client, messageParts) {
     let mousePosition = messageParts[1].split('-');
     var mouseSeq = messageParts[2];
     
@@ -170,9 +168,9 @@ module.exports = io => {
     if (!player) { return; }
   
     client.gameInstance.server_handleMousePosition(player, mousePosition, mouseSeq);
-  };
+  },
   
-  this.onClientFire = function (client, messageParts) {
+  onClientFire (client, messageParts) {
     let mousePosition = messageParts[1].split('-');
     var fireTime = messageParts[2];
     
@@ -180,9 +178,9 @@ module.exports = io => {
     if (!player) { return; }
     
     client.gameInstance.server_handleFiring(player, mousePosition, uuidv4(), fireTime);
-  };
+  },
   
-  this.getPlayerById = function (client) {
+  getPlayerById (client) {
     const { playerId, gameInstance } = client;
   
     let player = gameInstance.players.find(player => {
@@ -190,9 +188,9 @@ module.exports = io => {
     });
   
     return player;
-  };
+  },
   
-  this.putPlayerToFreeSlot = function (client) {
+  putPlayerToFreeSlot (client) {
     const player = client.gameInstance.server_addPlayer(client);
     let slotIndex = -1;
   
@@ -212,14 +210,14 @@ module.exports = io => {
     this.playerCount++;
   
     return true;
-  };
+  },
   
-  this.freeUpPlayerSlot = function (player) {
+  freeUpPlayerSlot (player) {
     let index = this.currentGamePlayerSlots.indexOf(player);
     this.currentGamePlayerSlots[index] = null;
-  };
+  },
   
-  this.setPlayerPositionBySlotIndex = function (player, index) {
+  setPlayerPositionBySlotIndex (player, index) {
     // TODO: implement better way of setting player's initial position
     switch (index) {
       case 0:
@@ -235,7 +233,5 @@ module.exports = io => {
         player.setInitialPosition({ x: 800, y: 600 });   
         break;
     }
-  };
-
-  return this;
+  }
 };

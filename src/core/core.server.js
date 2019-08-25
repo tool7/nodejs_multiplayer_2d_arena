@@ -2,6 +2,8 @@
 
 const SAT = require('sat');
 
+const connection = require('../connection');
+
 require('./core.shared.js');
 require('./../entities/player.server.js');
 require('./../entities/projectile.server.js');
@@ -27,7 +29,7 @@ class GameCore {
     // Note: If *this.io.to(GAME_ROOM)* is passed to constructor or put it in a variable,
     // using it to emit events will not work properly.
     // So instead it must be used as *this.io.to(this.gameRoom).emit('EVENT');*
-    this.io = data.io;
+    this.io = connection.io;
     this.gameRoom = data.gameRoom;
 
     this.sharedFunctions = new SharedFunctions();

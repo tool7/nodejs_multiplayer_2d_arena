@@ -5,7 +5,8 @@ const io = require('socket.io')(server);
 const uuidv4 = require('uuid/v4');
 const bodyParser = require('body-parser');
 
-const lobby = require('./src/lobby.js')(io);
+require('./src/connection').init(io);
+const lobby = require('./src/lobby.js');
 
 app.use('/', express.static(__dirname));
 app.use(bodyParser.json());
