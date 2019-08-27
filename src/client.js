@@ -65,15 +65,15 @@ const getAvailableGames = async () => {
 const initMenuSounds = () => {
   const menuButtons = document.querySelectorAll("button");
 
-  createjs.Sound.registerSound("sounds/button-click.mp3", "btn-click");
-  createjs.Sound.registerSound("sounds/button-hover.mp3", "btn-hover");
+  createjs.Sound.registerSound("sounds/button_click.mp3", "btn-click");
+  createjs.Sound.registerSound("sounds/button_hover.mp3", "btn-hover");
 
   menuButtons.forEach(button => {
     button.onmouseenter = () => {
-      createjs.Sound.play("btn-hover").volume = 0.5;
+      createjs.Sound.play("btn-hover").volume = 0.3;
     };
     button.onclick = () => {
-      createjs.Sound.play("btn-click").volume = 0.3;
+      createjs.Sound.play("btn-click").volume = 0.5;
     };
   });
 };
