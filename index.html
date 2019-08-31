@@ -25,16 +25,29 @@
 </head>
 <body>
 
-  <div  id="menu-container" class="container perspective">
+  <div id="menu-container" class="container perspective">
 
     <div id="menu-box">
       <div id="main-menu">
-        <h2 class="title">Multiplayer <br/> Space Shooter</h2>
-
-        <div class="form-field">
+        <div id="main-menu__player-name-field" class="form-field">
           <span>Enter your name:</span>
           <input id="main-menu__player-name-input" type="text">
         </div>
+
+        <div id="color-palette">
+          <span class="color-palette__item" color="red"></span>
+          <span class="color-palette__item" color="green"></span>
+          <span class="color-palette__item" color="blue"></span>
+          <span class="color-palette__item" color="yellow"></span>
+          <span class="color-palette__item" color="orange"></span>
+          <span class="color-palette__item" color="purple"></span>
+          <span class="color-palette__item" color="cyan"></span>
+          <span class="color-palette__item" color="lime"></span>
+          <span class="color-palette__item" color="pink"></span>
+          <span class="color-palette__item active" color="white"></span>
+        </div>
+
+        <div id="main-menu__player-ship-container"></div>
 
         <button id="main-menu__continue-btn" class="disabled">Continue</button>
       </div>

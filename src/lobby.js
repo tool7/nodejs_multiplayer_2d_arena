@@ -70,6 +70,7 @@ module.exports = {
       return {
         id: p.id,
         name: p.name,
+        color: p.color,
         position: p.body.position,
         health: p.health
       };
@@ -83,6 +84,7 @@ module.exports = {
     client.to(gameName).emit('player-connected', {
       id: client.playerId,
       name: client.playerName,
+      color: client.playerColor,
       position: connectedPlayer.body.position
     });
   

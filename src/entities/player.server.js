@@ -1,13 +1,14 @@
 const SAT = require('sat');
 
-const playerHeight = 40;
-const playerWidth = 40;
+const playerHeight = 64;
+const playerWidth = 46;
 
 class Player {
 
-  constructor (id, name) {
+  constructor (id, name, color) {
     this.id = id;
     this.name = name;
+    this.color = color;
 
     this.inputs = [];
     this.angles = [];

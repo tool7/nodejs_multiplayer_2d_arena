@@ -2,10 +2,11 @@
 
 class GameCore {
 
-  constructor (socket, playerId, playerName) {
+  constructor (socket, playerId, playerName, playerColor) {
     this.socket = socket;
     this.playerId = playerId;
     this.playerName = playerName;
+    this.playerColor = playerColor;
 
     this.sharedFunctions = new SharedFunctions();
     this.gameReady = false;
@@ -49,7 +50,6 @@ class GameCore {
 
   loadTextures () {
     PIXI.loader.add([
-      "assets/player_ship.png",
       "assets/enemy_ship.png",
       "assets/basic_projectile.png",
       "assets/background.jpg"
@@ -68,7 +68,7 @@ class GameCore {
 
     this.app.stage.addChild(background);
 
-    this.self = new Player(this.app, this.playerName, false);
+    this.self = new Player(this.app, this.playerName, this.playerColor);
     this.self.id = this.playerId;
     this.self.registerEventListener("player-death", () => {
       this.isPlayerAlive = false;
@@ -253,7 +253,7 @@ class GameCore {
     this.self.setInitialPosition(selfData.position);
 
     this.otherPlayers = otherPlayersData.reduce((obj, p) => {
-      const player = new Player(this.app, p.name, true);
+      const player = new Player(this.app, p.name, p.color);
       player.setInitialPosition(p.position);
       player.setHealth(p.health);
 
@@ -263,7 +263,7 @@ class GameCore {
   }
 
   client_onPlayerConnected (data) {
-    const player = new Player(this.app, data.name, true);
+    const player = new Player(this.app, data.name, data.color);
     player.setInitialPosition(data.position);
 
     this.otherPlayers[data.id] = player;

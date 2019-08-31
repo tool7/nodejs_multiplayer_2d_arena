@@ -1,5 +1,6 @@
-let state = {
+const state = {
   playerName: "",
+  playerColor: 0xffffff,
   createMenu: {
     enteredGameName: "",
     enteredGamePassword: ""
@@ -10,8 +11,22 @@ let state = {
   }
 };
 
+const colorPalette = {
+  red: 0xff3d3d,
+  green: 0x40ff43,
+  blue: 0x3367ff,
+  yellow: 0xeded2f,
+  orange: 0xffa940,
+  purple: 0x9940ff,
+  cyan: 0x40ffec,
+  lime: 0xafff40,
+  pink: 0xff40b6,
+  white: 0xffffff,
+};
+
 window.onload = function () {
 
+  setupPlayerShipColorPalette();
   initMenuSounds();
   setupMenuBoxAnimation();
   setupMenuEventHandlers();
@@ -62,8 +77,45 @@ const getAvailableGames = async () => {
     });
 };
 
+const setupPlayerShipColorPalette = () => {
+  const colorPaletteItems = document.querySelectorAll(".color-palette__item");
+  const playerShipContainer = document.getElementById("main-menu__player-ship-container");
+  const pixiApp = new PIXI.Application({ width: 120, height: 120, transparent: true });
+  playerShipContainer.appendChild(pixiApp.view);
+
+  PIXI.loader.add(["assets/player_ship.png"])
+    .load(() => {
+      let playerShipSprite = new PIXI.Sprite(
+        PIXI.loader.resources["assets/player_ship.png"].texture
+      );
+      playerShipSprite.width = 70;
+      playerShipSprite.height = 100;
+      playerShipSprite.anchor.set(0.5);
+      playerShipSprite.x = 60;
+      playerShipSprite.y = 60;
+
+      pixiApp.stage.addChild(playerShipSprite);
+      
+      pixiApp.ticker.add(() => {
+        playerShipSprite.rotation += 0.01;
+        playerShipSprite.tint = state.playerColor;
+      });
+    });
+
+  colorPaletteItems.forEach(item => {
+    item.addEventListener("click", () => {
+      colorPaletteItems.forEach(i => { i.classList.remove("active"); });
+      item.classList.add("active");
+
+      const color = item.getAttribute("color");
+      state.playerColor = colorPalette[color];
+    });
+  });
+};
+
 const initMenuSounds = () => {
   const menuButtons = document.querySelectorAll("button");
+  const colorPaletteItems = document.querySelectorAll(".color-palette__item");
 
   createjs.Sound.registerSound("sounds/button_click.mp3", "btn-click");
   createjs.Sound.registerSound("sounds/button_hover.mp3", "btn-hover");
@@ -73,6 +125,12 @@ const initMenuSounds = () => {
       createjs.Sound.play("btn-hover").volume = 0.3;
     };
     button.onclick = () => {
+      createjs.Sound.play("btn-click").volume = 0.5;
+    };
+  });
+
+  colorPaletteItems.forEach(item => {
+    item.onclick = () => {
       createjs.Sound.play("btn-click").volume = 0.5;
     };
   });
@@ -231,13 +289,14 @@ const startGame = () => {
     socket.emit("game-request", {
       name: state.joinMenu.selectedGameName,
       password: state.joinMenu.enteredGamePassword,
-      playerName: state.playerName
+      playerName: state.playerName,
+      playerColor: state.playerColor
     });
   
     socket.on("connection-success", data => {
       resolve();
 
-      const game = new GameCore(socket, data.id, state.playerName);
+      const game = new GameCore(socket, data.id, state.playerName, state.playerColor);
       game.start();
     });
   

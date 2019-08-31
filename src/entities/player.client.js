@@ -1,11 +1,11 @@
-const playerHeight = 40;
-const playerWidth = 40;
+const playerHeight = 64;
+const playerWidth = 46;
 const healthbarWidth = 80;
 const healthbarHeight = 5;
 
 class Player extends SimpleEventEmitter {
 
-  constructor (app, name, isEnemy) {
+  constructor (app, name, color) {
     super();
 
     this.app = app;
@@ -19,10 +19,9 @@ class Player extends SimpleEventEmitter {
     this.health = 100;
     this.velocity = 2;
 
-    const textureName = isEnemy ? "enemy_ship" : "player_ship";
-    const texture = PIXI.loader.resources[`assets/${ textureName }.png`].texture;
-
+    const texture = PIXI.loader.resources["assets/player_ship.png"].texture;
     this.body = new PIXI.Sprite(texture);
+    this.body.tint = color;
     this.body.width = playerWidth;
     this.body.height = playerHeight;
     this.body.anchor.x = 0.5;

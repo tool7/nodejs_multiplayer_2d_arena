@@ -114,6 +114,50 @@ li {
   background-color: rgba(36, 64, 125, .3);
 }
 
+#color-palette {
+  width: 37rem;
+  height: 16rem;
+  margin-bottom: 2rem;
+  box-sizing: border-box;
+}
+
+.color-palette__item {
+  position: relative;
+  display: inline-block;
+  width: 6rem;
+  height: 6rem;
+  margin: .5rem;
+  border-radius: 50%;
+}
+
+.color-palette__item:hover {
+  border: 2px solid white;
+}
+
+.color-palette__item.active::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid black;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, .2);
+}
+
+[color="red"] { background-color: #ff3d3d; }
+[color="green"] { background-color: #40ff43; }
+[color="blue"] { background-color: #3367ff; }
+[color="yellow"] { background-color: #eded2f; }
+[color="orange"] { background-color: #ffa940; }
+[color="purple"] { background-color: #9940ff; }
+[color="cyan"] { background-color: #40ffec; }
+[color="lime"] { background-color: #afff40; }
+[color="pink"] { background-color: #ff40b6; }
+[color="white"] { background-color: #ffffff; }
+
 .title {
   position: absolute;
   top: 10%;
@@ -138,17 +182,17 @@ li {
   height: 100%;
 }
 
-#main-menu .title {
-  font-size: 5rem;
-  font-weight: 100;
-}
-
 #main-menu__continue-btn {
   position: absolute;
   bottom: 6rem;
   height: 10rem;
   width: 24rem;
   font-size: 2.5rem;
+}
+
+#main-menu__player-name-field {
+  position: absolute;
+  top: 15%;
 }
 
 /* ===== CREATE JOIN CHOICE MENU ===== */

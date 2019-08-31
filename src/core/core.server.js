@@ -58,7 +58,7 @@ class GameCore {
   // ====================================
 
   server_addPlayer (data) {
-    const player = new Player(data.playerId, data.playerName);
+    const player = new Player(data.playerId, data.playerName, data.playerColor);
     this.players.push(player);
     
     return player;
