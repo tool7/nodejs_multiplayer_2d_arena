@@ -355,6 +355,7 @@ class GameCore {
   client_prediction () {
     this.sharedFunctions.processPlayerInput(this.self);
     this.sharedFunctions.processPlayerAngle(this.self);
+    this.sharedFunctions.limitPlayerPositionToMapBounds(this.self);
 
     this.self.update();
   }

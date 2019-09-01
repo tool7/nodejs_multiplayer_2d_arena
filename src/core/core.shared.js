@@ -21,9 +21,6 @@
           player.drive();
         }
       }
-
-      this.limitPlayerPositionToMapBounds(player);
-  
       player.lastInputSeq = player.inputs[inputsLength - 1].seq;
     }
   
@@ -56,15 +53,19 @@
 
       if (playerPosX <= positionLimits.x_min) {
         playerPosX = positionLimits.x_min + 1;
+        player.xVelocity = 0;
       }
       if (playerPosX >= positionLimits.x_max) {
         playerPosX = positionLimits.x_max - 1;
+        player.xVelocity = 0;
       }
       if (playerPosY <= positionLimits.y_min) {
         playerPosY = positionLimits.y_min + 1;
+        player.yVelocity = 0;
       }
       if (playerPosY >= positionLimits.y_max) {
         playerPosY = positionLimits.y_max - 1;
+        player.yVelocity = 0;
       }
 
       player.moveTo({ x: playerPosX, y: playerPosY });

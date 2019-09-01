@@ -91,6 +91,7 @@ class GameCore {
     this.players.forEach(player => {
       this.sharedFunctions.processPlayerInput(player);
       this.sharedFunctions.processPlayerAngle(player);
+      this.sharedFunctions.limitPlayerPositionToMapBounds(player);
 
       player.update();
   
