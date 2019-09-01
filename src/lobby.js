@@ -162,18 +162,18 @@ module.exports = {
   },
   
   onClientInput (client, messageParts) {
-    let inputKeys = messageParts[1].split('-');
-    var inputSeq = messageParts[2];
+    let inputValue = messageParts[1];
+    let inputSeq = messageParts[2];
     
     let player = this.getPlayerById(client);
     if (!player) { return; }
   
-    client.gameInstance.server_handleInput(player, inputKeys, inputSeq);
+    client.gameInstance.server_handleInput(player, inputValue, inputSeq);
   },
   
   onClientMouseMove (client, messageParts) {
     let mousePosition = messageParts[1].split('-');
-    var mouseSeq = messageParts[2];
+    let mouseSeq = messageParts[2];
     
     let player = this.getPlayerById(client);
     if (!player) { return; }
@@ -183,7 +183,7 @@ module.exports = {
   
   onClientFire (client, messageParts) {
     let mousePosition = messageParts[1].split('-');
-    var fireTime = messageParts[2];
+    let fireTime = messageParts[2];
     
     let player = this.getPlayerById(client);
     if (!player) { return; }

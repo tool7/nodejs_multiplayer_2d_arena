@@ -17,7 +17,9 @@ class Player extends SimpleEventEmitter {
     this.lastAngleSeq = null;
 
     this.health = 100;
-    this.velocity = 2;
+    this.xVelocity = 0;
+    this.yVelocity = 0;
+    this.maxVelocity = 4;
 
     const texture = PIXI.loader.resources["assets/player_ship.png"].texture;
     this.body = new PIXI.Sprite(texture);
@@ -82,38 +84,33 @@ class Player extends SimpleEventEmitter {
     this.remove();
   }
 
-  move (directions) {
-    let x = 0;
-    let y = 0;
+  drive () {
+    const currentAngle = this.angles[0];
+    if (!currentAngle) { return; }
 
-    directions.forEach(direction => {
-      switch (direction) {
-        case 'l':
-          x = -1;
-          break;
-        case 'r':
-          x = 1;
-          break;
-        case 'u':
-          y = -1;
-          break;
-        case 'd':
-          y = 1;
-          break;
-      }
-    });
+    const direction = currentAngle.value;
 
-    const xOffset = x * this.velocity;
-    const yOffset = y * this.velocity;
+    const newXVelocity = this.xVelocity + (Math.cos(direction) / 10);
+    const newYVelocity = this.yVelocity + (Math.sin(direction) / 10);
 
-    this.body.x += xOffset;
-    this.body.y += yOffset;
+    if (Math.abs(newXVelocity) < this.maxVelocity) {
+      this.xVelocity = newXVelocity;
+    }
 
-    this.playerNameText.x += xOffset;
-    this.playerNameText.y += yOffset;
+    if (Math.abs(newYVelocity) < this.maxVelocity) {
+      this.yVelocity = newYVelocity;
+    }
+  }
 
-    this.healthbar.x += xOffset;
-    this.healthbar.y += yOffset;
+  update () {
+    this.body.x += this.xVelocity;
+    this.body.y += this.yVelocity;
+
+    this.playerNameText.x += this.xVelocity;
+    this.playerNameText.y += this.yVelocity;
+
+    this.healthbar.x += this.xVelocity;
+    this.healthbar.y += this.yVelocity;
   }
 
   moveTo (position) {

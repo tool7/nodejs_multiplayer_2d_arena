@@ -91,6 +91,8 @@ class GameCore {
     this.players.forEach(player => {
       this.sharedFunctions.processPlayerInput(player);
       this.sharedFunctions.processPlayerAngle(player);
+
+      player.update();
   
       player.inputs = [];
       player.angles = [];
@@ -115,8 +117,8 @@ class GameCore {
     this.server_handleCollisions();
   }
 
-  server_handleInput (player, inputKeys, inputSeq) {
-    player.inputs.push({ keys: inputKeys, seq: inputSeq });
+  server_handleInput (player, inputValue, inputSeq) {
+    player.inputs.push({ value: inputValue, seq: inputSeq });
   }
 
   server_handleMousePosition (player, position, inputSeq) {
@@ -124,7 +126,7 @@ class GameCore {
     const y = parseInt(position[1]);
 
     const inputAngle = this.sharedFunctions.angleBetweenPoints(player.body.position, { x, y });
-    player.angles.push({ angle: inputAngle, seq: inputSeq });
+    player.angles.push({ value: inputAngle, seq: inputSeq });
   }
 
   server_handleFiring (player, mousePosition, projectileId) {

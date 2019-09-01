@@ -214,10 +214,11 @@ class GameCore {
       }
     }
 
-    if (!lastInputSeqIndex) { return; }
-    this.self.inputs.splice(0, lastInputSeqIndex + 1);
-
     this.self.moveTo(selfPositionOnServer);
+
+    if (!lastInputSeqIndex) { return; }
+
+    this.self.inputs.splice(0, lastInputSeqIndex + 1);    
     this.self.lastInputSeq = lastInputSeqIndex;
   }
 
@@ -240,10 +241,11 @@ class GameCore {
       }
     }
 
-    if (!lastAngleSeqIndex) { return; }
-    this.self.angles.splice(0, lastAngleSeqIndex + 1);
-
     this.self.rotateTo(selfAngleOnServer);
+
+    if (!lastAngleSeqIndex) { return; }
+
+    this.self.angles.splice(0, lastAngleSeqIndex + 1);
     this.self.lastAngleSeq = lastAngleSeqIndex;
   }
 
@@ -353,36 +355,26 @@ class GameCore {
   client_prediction () {
     this.sharedFunctions.processPlayerInput(this.self);
     this.sharedFunctions.processPlayerAngle(this.self);
+
+    this.self.update();
   }
 
   client_handleInput () {
-    let input = [];
-
-    if (this.keyboard.pressed('A') || this.keyboard.pressed('left')) {
-      input.push('l');
-    }
-
-    if (this.keyboard.pressed('D') || this.keyboard.pressed('right')) {
-      input.push('r');
-    }
-
-    if (this.keyboard.pressed('S') || this.keyboard.pressed('down')) {
-      input.push('d');
-    }
+    let input = null;
 
     if (this.keyboard.pressed('W') || this.keyboard.pressed('up')) {
-      input.push('u');
+      input = 'f';
     }
 
-    if (input.length) {
+    if (input) {
       this.inputSeq++;
 
       this.self.inputs.push({
-        keys: input,
+        value: input,
         seq: this.inputSeq
       });
 
-      const inputPacket = `i.${ input.join('-') }.${ this.inputSeq }`;
+      const inputPacket = `i.${ input }.${ this.inputSeq }`;
       this.socket.send(inputPacket);
     }
   }
@@ -395,7 +387,7 @@ class GameCore {
     this.angleSeq++;
 
     this.self.angles.push({
-      angle,
+      value: angle,
       seq: this.angleSeq
     });
 

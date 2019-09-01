@@ -16,8 +16,10 @@
       for (let i = 0; i < inputsLength; i++) {
         if (player.inputs[i].seq <= player.lastInputSeq) { continue; }
   
-        let directions = player.inputs[i].keys;
-        player.move(directions);
+        const command = player.inputs[i].value;
+        if (command === "f") {
+          player.drive();
+        }
       }
 
       this.limitPlayerPositionToMapBounds(player);
@@ -32,7 +34,7 @@
       for (let i = 0; i < anglesLength; i++) {
         if (player.angles[i].seq <= player.lastAngleSeq) { continue; }
   
-        let angle = player.angles[i].angle;
+        let angle = player.angles[i].value;
         player.rotateTo(angle);
       }
     

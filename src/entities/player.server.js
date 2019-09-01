@@ -16,7 +16,9 @@ class Player {
     this.lastAngleSeq = null;
 
     this.health = 100;
-    this.velocity = 2;
+    this.xVelocity = 0;
+    this.yVelocity = 0;
+    this.maxVelocity = 3;
 
     this.body = {
       position: { x: 0, y: 0 },
@@ -31,32 +33,30 @@ class Player {
     this.moveTo(position);
   }
 
-  move (directions) {
-    let x = 0;
-    let y = 0;
+  drive () {
+    const currentAngle = this.angles[0];
+    if (!currentAngle) { return; }
 
-    directions.forEach(direction => {
-      switch (direction) {
-        case 'l':
-          x = -1;
-          break;
-        case 'r':
-          x = 1;
-          break;
-        case 'u':
-          y = -1;
-          break;
-        case 'd':
-          y = 1;
-          break;
-      }
-    });
+    const direction = currentAngle.value;
 
-    this.body.position.x += x * this.velocity;
-    this.body.position.y += y * this.velocity;
+    const newXVelocity = this.xVelocity + (Math.cos(direction) / 10);
+    const newYVelocity = this.yVelocity + (Math.sin(direction) / 10);
 
-    this.body.boundingBox.pos.x += x * this.velocity;
-    this.body.boundingBox.pos.y += y * this.velocity;
+    if (Math.abs(newXVelocity) < this.maxVelocity) {
+      this.xVelocity = newXVelocity;
+    }
+
+    if (Math.abs(newYVelocity) < this.maxVelocity) {
+      this.yVelocity = newYVelocity;
+    }
+  }
+
+  update () {
+    this.body.position.x += this.xVelocity;
+    this.body.position.y += this.yVelocity;
+
+    this.body.boundingBox.pos.x += this.xVelocity;
+    this.body.boundingBox.pos.y += this.yVelocity;
   }
 
   moveTo (position) {
