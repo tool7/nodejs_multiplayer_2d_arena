@@ -183,20 +183,21 @@ class GameCore {
         const isPlayerWormholeACollision = this.server_isPlayerWormholeCollision(player.body.boundingBox, wormholeA.boundingBox);
         const isPlayerWormholeBCollision = this.server_isPlayerWormholeCollision(player.body.boundingBox, wormholeB.boundingBox);
 
-        // TODO: Debugging purposes. Replace this with proper values
-        // once different player movement mechanism is implemented
-        const playerOffset = { x: 50, y: 50 };
-
+        const teleportOffset = {
+          x: player.xVelocity + (20 * Math.sign(player.xVelocity)),
+          y: player.yVelocity + (20 * Math.sign(player.yVelocity))
+        };
+        
         if (isPlayerWormholeACollision) {
           player.moveTo({
-            x: wormholeB.position.x + playerOffset.x,
-            y: wormholeB.position.y + playerOffset.y
+            x: wormholeB.position.x + teleportOffset.x,
+            y: wormholeB.position.y + teleportOffset.y
           });
         }
         else if (isPlayerWormholeBCollision) {
           player.moveTo({
-            x: wormholeA.position.x + playerOffset.x,
-            y: wormholeA.position.y + playerOffset.y
+            x: wormholeA.position.x + teleportOffset.x,
+            y: wormholeA.position.y + teleportOffset.y
           });
         }
       });

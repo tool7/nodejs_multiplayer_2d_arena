@@ -1,6 +1,6 @@
 const SAT = require('sat');
 
-const wormholeRadius = 2;
+const wormholeRadius = 5;
 
 class Pathway {
 
