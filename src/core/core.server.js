@@ -1,12 +1,14 @@
 // Each frame is run every 45ms (~ 22fps)
 
 const SAT = require('sat');
+const uuidv4 = require('uuid/v4');
 
 const connection = require('../connection');
 
 require('./core.shared.js');
 require('./../entities/player.server.js');
 require('./../entities/projectile.server.js');
+require('./../entities/pathway.server.js');
 
 (function () {
   const frameTime = 45;     // Milliseconds
@@ -36,6 +38,10 @@ class GameCore {
     this.isStarted = false;
     this.players = [];
     this.projectiles = [];
+    this.pathways = [
+      new Pathway(uuidv4(), { x: 200, y: 200 }, { x: 800, y: 500 }, 0x00ff00),
+      new Pathway(uuidv4(), { x: 100, y: 700 }, { x: 900, y: 100 }, 0xffffff)
+    ];
   }
 
   // ========== CORE FUNCTIONS ==========
@@ -149,7 +155,7 @@ class GameCore {
         if (projectile.playerId === player.id) { continue; }
 
         const isCollision = this.server_isPlayerProjectileCollision(player.body.boundingBox, projectile.body.boundingBox);
-
+        
         if (isCollision) {
           player.health -= projectile.damage;
           if (player.health <= 0) {
@@ -167,11 +173,39 @@ class GameCore {
           this.projectiles.splice(projectileIndex, 1);
         }
       }
+
+      this.pathways.forEach(pathway => {
+        const { wormholeA, wormholeB } = pathway.wormholes;
+
+        const isPlayerWormholeACollision = this.server_isPlayerWormholeCollision(player.body.boundingBox, wormholeA.boundingBox);
+        const isPlayerWormholeBCollision = this.server_isPlayerWormholeCollision(player.body.boundingBox, wormholeB.boundingBox);
+
+        // TODO: Debugging purposes. Replace this with proper values
+        // once different player movement mechanism is implemented
+        const playerOffset = { x: 50, y: 50 };
+
+        if (isPlayerWormholeACollision) {
+          player.moveTo({
+            x: wormholeB.position.x + playerOffset.x,
+            y: wormholeB.position.y + playerOffset.y
+          });
+        }
+        else if (isPlayerWormholeBCollision) {
+          player.moveTo({
+            x: wormholeA.position.x + playerOffset.x,
+            y: wormholeA.position.y + playerOffset.y
+          });
+        }
+      });
     });
   }
 
   server_isPlayerProjectileCollision (player, projectile) {
     return SAT.testCirclePolygon(player, projectile);
+  }
+
+  server_isPlayerWormholeCollision (player, wormhole) {
+    return SAT.testCircleCircle(player, wormhole);
   }
 
   server_onPlayerDeath (player) {

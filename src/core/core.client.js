@@ -24,6 +24,7 @@ class GameCore {
     this.serverUpdates = [];
     this.otherPlayers = {};
     this.projectiles = {};
+    this.pathways = {};
 
     this.keyboard = new THREEx.KeyboardState();
     this.mouse = { position: {} };
@@ -50,7 +51,7 @@ class GameCore {
 
   loadTextures () {
     PIXI.loader.add([
-      "assets/enemy_ship.png",
+      "assets/wormhole.png",
       "assets/basic_projectile.png",
       "assets/background.jpg"
     ])
@@ -258,6 +259,18 @@ class GameCore {
       player.setHealth(p.health);
 
       obj[p.id] = player;
+      return obj;
+    }, {});
+
+    this.pathways = data.pathways.reduce((obj, p) => {
+      const pathway = new Pathway(
+        this.app,
+        p.wormholeAPosition,
+        p.wormholeBPosition,
+        p.color
+      );
+
+      obj[p.id] = pathway;
       return obj;
     }, {});
   }

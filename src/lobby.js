@@ -75,10 +75,19 @@ module.exports = {
         health: p.health
       };
     });
+
+    const pathways = game.instance.pathways.map(p => {
+      return {
+        id: p.id,
+        color: p.color,
+        wormholeAPosition: p.wormholes.wormholeA.position,
+        wormholeBPosition: p.wormholes.wormholeB.position
+      };
+    });
   
     const connectedPlayer = this.getPlayerById(client);
 
-    client.emit('initial-game-state', { players });
+    client.emit('initial-game-state', { players, pathways });
 
     // Sending to all connected clients except the current client who joins the game
     client.to(gameName).emit('player-connected', {
