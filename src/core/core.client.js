@@ -45,29 +45,25 @@ class GameCore {
     const gameContainer = document.getElementById("game");
     gameContainer.appendChild(this.app.view);
 
-    this.loadTextures();
-    this.loadSounds();
+    this.initTextures();
+    this.initSounds();
   }
 
-  loadTextures () {
+  initTextures () {
     PIXI.loader.add([
       "assets/wormhole.png",
       "assets/basic_projectile.png",
-      "assets/background.jpg"
+      "assets/game_background.png"
     ])
     .load(this.onTexturesLoaded.bind(this));
   }
 
-  loadSounds () {
+  initSounds () {
     createjs.Sound.registerSound("sounds/laser_2.mp3", "basic-shot");
   }
 
   onTexturesLoaded () {
-    const bgTexture = PIXI.loader.resources["assets/background.jpg"].texture;
-    const croppedBgTexture = new PIXI.Texture(bgTexture, new PIXI.Rectangle(0, 0, this.terrain.width, this.terrain.height));
-    const background = new PIXI.Sprite(croppedBgTexture);
-
-    this.app.stage.addChild(background);
+    this.drawMap();
 
     this.self = new Player(this.app, this.playerName, this.playerColor);
     this.self.id = this.playerId;
@@ -83,6 +79,53 @@ class GameCore {
     this.initPhysicsSimulation();
 
     this.gameReady = true;
+  }
+
+  drawMap () {
+    const bgTexture = PIXI.loader.resources["assets/game_background.png"].texture;
+    const croppedBgTexture = new PIXI.Texture(bgTexture, new PIXI.Rectangle(0, 0, this.terrain.width, this.terrain.height));
+    const background = new PIXI.Sprite(croppedBgTexture);
+
+    const getRandomNumberInRange = (min, max) => {
+      return Math.random() * (max - min) + min;
+    };
+
+    const generateStarsEffect = () => {
+      let stars = [];
+
+      for (let i = 0; i < 50; i++) {
+        stars.push({
+          pixiGraphics: new PIXI.Graphics(),
+          radius: getRandomNumberInRange(1, 1.6),
+          x: +getRandomNumberInRange(0, this.terrain.width).toFixed(),
+          y: +getRandomNumberInRange(0, this.terrain.height).toFixed(),
+          increaseAmount: getRandomNumberInRange(0.01, 0.08)
+        });
+
+        this.app.stage.addChild(stars[i].pixiGraphics);
+      }
+
+      this.app.ticker.add(() => {
+        stars.forEach(s => {
+          if (s.radius < 1) {
+            s.increaseAmount = -s.increaseAmount;
+          }
+          if (s.radius > 1.6) {
+            s.increaseAmount = -s.increaseAmount;
+          }
+          s.radius += s.increaseAmount;
+  
+          s.pixiGraphics.clear();
+          s.pixiGraphics.lineStyle(0);
+          s.pixiGraphics.beginFill(0xffffff, 1);
+          s.pixiGraphics.drawCircle(s.x, s.y, s.radius);
+          s.pixiGraphics.endFill();
+        });
+      });
+    };
+
+    this.app.stage.addChild(background);
+    generateStarsEffect();
   }
 
 
