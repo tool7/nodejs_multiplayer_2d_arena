@@ -62,10 +62,6 @@ module.exports = {
     const game = this.games[gameName];
     if (!game) { return false; }
   
-    if (!game.instance.isStarted) {
-      game.instance.start();
-    }
-  
     const players = game.instance.players.map(p => {
       return {
         id: p.id,
@@ -108,12 +104,8 @@ module.exports = {
   
     let player = this.getPlayerById(client);
     this.freeUpPlayerSlot(player);
-  
-    game.instance.players = game.instance.players.filter(p => {
-      return p.id !== client.playerId;
-    });
-  
-    client.to(gameName).emit('player-disconnected', client.playerId);
+
+    game.instance.server_removePlayer(client);
   },
   
   onMessage (client, message) {

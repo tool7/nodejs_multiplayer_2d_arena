@@ -46,7 +46,7 @@ class GameCore {
 
   // ========== CORE FUNCTIONS ==========
   initPhysicsSimulation () {
-    setInterval(() => {
+    this.physicsUpdateId = setInterval(() => {
       this.server_updatePhysics();
     }, 15);
   }
@@ -58,7 +58,10 @@ class GameCore {
     this.server_update();
   }
 
-  stopUpdate () {
+  stop () {
+    this.isStarted = false;
+
+    clearInterval(this.physicsUpdateId);
     window.cancelAnimationFrame(this.updateId);
   }
   // ====================================
@@ -66,8 +69,21 @@ class GameCore {
   server_addPlayer (data) {
     const player = new Player(data.playerId, data.playerName, data.playerColor);
     this.players.push(player);
+
+    if (!this.isStarted) {
+      this.start();
+    }
     
     return player;
+  }
+
+  server_removePlayer (data) {
+    this.players = this.players.filter(p => p.id !== data.playerId);
+    this.io.to(this.gameRoom).emit('player-disconnected', data.playerId);
+
+    if (this.players.length === 0) {
+      this.stop();
+    }
   }
 
   server_update () {

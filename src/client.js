@@ -1,4 +1,5 @@
 const state = {
+  gameInstance: null,
   playerName: "",
   playerColor: 0xffffff,
   createMenu: {
@@ -24,13 +25,13 @@ const colorPalette = {
   white: 0xffffff,
 };
 
-window.onload = function () {
+window.onload = async function () {
+  await loadPixiTextures();
 
   setupPlayerShipColorPalette();
   initMenuSounds();
   setupMenuBoxAnimation();
   setupMenuEventHandlers();
-
 };
 
 const onGameListItemClicked = e => {
@@ -77,30 +78,37 @@ const getAvailableGames = async () => {
     });
 };
 
+const loadPixiTextures = async () => {
+  return new Promise((resolve, reject) => {
+    PIXI.loader.add([
+      "assets/player_ship.png",
+      "assets/wormhole.png",
+      "assets/basic_projectile.png",
+      "assets/game_background.png"
+    ])
+    .load(resolve);
+  });
+};
+
 const setupPlayerShipColorPalette = () => {
   const colorPaletteItems = document.querySelectorAll(".color-palette__item");
   const playerShipContainer = document.getElementById("main-menu__player-ship-container");
   const pixiApp = new PIXI.Application({ width: 120, height: 120, transparent: true });
   playerShipContainer.appendChild(pixiApp.view);
 
-  PIXI.loader.add(["assets/player_ship.png"])
-    .load(() => {
-      let playerShipSprite = new PIXI.Sprite(
-        PIXI.loader.resources["assets/player_ship.png"].texture
-      );
-      playerShipSprite.width = 70;
-      playerShipSprite.height = 100;
-      playerShipSprite.anchor.set(0.5);
-      playerShipSprite.x = 60;
-      playerShipSprite.y = 60;
+  let playerShipSprite = new PIXI.Sprite(PIXI.loader.resources["assets/player_ship.png"].texture);
+  playerShipSprite.width = 70;
+  playerShipSprite.height = 100;
+  playerShipSprite.anchor.set(0.5);
+  playerShipSprite.x = 60;
+  playerShipSprite.y = 60;
 
-      pixiApp.stage.addChild(playerShipSprite);
-      
-      pixiApp.ticker.add(() => {
-        playerShipSprite.rotation += 0.01;
-        playerShipSprite.tint = state.playerColor;
-      });
-    });
+  pixiApp.stage.addChild(playerShipSprite);
+  
+  pixiApp.ticker.add(() => {
+    playerShipSprite.rotation += 0.01;
+    playerShipSprite.tint = state.playerColor;
+  });
 
   colorPaletteItems.forEach(item => {
     item.addEventListener("click", () => {
@@ -159,6 +167,7 @@ const setupMenuBoxAnimation = () => {
 };
 
 const setupMenuEventHandlers = () => {
+  const menuContainer = document.getElementById("menu-container");
   const mainMenu = document.getElementById("main-menu");
   const mainMenuPlayerNameInput = document.getElementById("main-menu__player-name-input");
   const mainMenuContinueButton = document.getElementById("main-menu__continue-btn");
@@ -175,6 +184,10 @@ const setupMenuEventHandlers = () => {
   const joinGameMenuBackButton = document.getElementById("join-game-menu__back-btn");
   const joinGameMenuJoinButton = document.getElementById("join-game-menu__join-btn");
   const joinGameMenuGamePasswordField = document.getElementById("join-game-menu__game-password-field");
+
+  const gameContainer = document.getElementById("game-container");
+  const exitGameModal = document.getElementById("exit-game-modal");
+  const exitGameModalButton = document.getElementById("exit-game-modal__btn");
 
   mainMenuPlayerNameInput.addEventListener("keyup", e => {
     if (!e.target.value) {
@@ -259,6 +272,27 @@ const setupMenuEventHandlers = () => {
   });
 
   joinGameMenuJoinButton.addEventListener("click", onJoinGameClick);
+
+  document.addEventListener("keyup", e => {
+    if (!state.gameInstance) { return; }
+
+    if (e.key === "Escape") {
+      if (exitGameModal.classList.contains("hidden")) {
+        exitGameModal.classList.remove("hidden");
+      } else {
+        exitGameModal.classList.add("hidden");
+      }
+    }
+  });
+
+  exitGameModalButton.addEventListener("click", () => {
+    menuContainer.classList.remove("hidden");
+    gameContainer.classList.add("hidden");
+    exitGameModal.classList.add("hidden");
+
+    state.gameInstance.destroy();
+    state.gameInstance = null;
+  });
 };
 
 const storePlayerName = () => {
@@ -269,6 +303,7 @@ const onJoinGameClick = async () => {
   if (!state.joinMenu.selectedGameName) { return; }
 
   const menuContainer = document.getElementById("menu-container");
+  const gameContainer = document.getElementById("game-container");
   const joinGameMenuGamePasswordInput = document.querySelector("#join-game-menu__game-password-field > input");
 
   state.joinMenu.enteredGamePassword = joinGameMenuGamePasswordInput.value;
@@ -276,6 +311,7 @@ const onJoinGameClick = async () => {
   try {
     await startGame();
     menuContainer.classList.add("hidden");
+    gameContainer.classList.remove("hidden");
   }
   catch (error) {
     alert(error);
@@ -296,8 +332,8 @@ const startGame = () => {
     socket.on("connection-success", data => {
       resolve();
 
-      const game = new GameCore(socket, data.id, state.playerName, state.playerColor);
-      game.start();
+      state.gameInstance = new GameCore(socket, data.id, state.playerName, state.playerColor);
+      state.gameInstance.start();
     });
   
     socket.on("connection-fail", () => {

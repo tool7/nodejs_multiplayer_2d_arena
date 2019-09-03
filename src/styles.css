@@ -20,13 +20,15 @@ html, body {
 
 button {
   font-family: inherit;
-  border: none;
   outline: none;
   cursor: pointer;
   text-transform: uppercase;
   border-radius: 3px;
   font-size: 1.75rem;
   color: white;
+  background-color: transparent;
+  border: 1px solid #fff;
+  transform: skew(-6deg);
 }
 
 button.disabled {
@@ -34,6 +36,10 @@ button.disabled {
   color: gray;
   border-color: gray !important;
   pointer-events: none;
+}
+
+button:hover {
+  background-color: rgba(36, 64, 125, .3);
 }
 
 button.disabled:hover {
@@ -102,16 +108,6 @@ li {
   border: 1px solid #fff;
   border-radius: 3px;
   transform: translate(-50%, -50%);
-}
-
-#menu-box * button {
-  background-color: transparent;
-  border: 1px solid #fff;
-  transform: skew(-6deg);
-}
-
-#menu-box * button:hover {
-  background-color: rgba(36, 64, 125, .3);
 }
 
 #color-palette {
@@ -270,4 +266,34 @@ li {
 
 #join-game-menu .list-item.selected {
   background-color: rgba(36, 64, 125, .7);
+}
+
+/* ===== EXIT GAME MODAL ===== */
+#exit-game-modal {
+  position: absolute;
+  width: 40rem;
+  height: 30rem;
+  top: 50%;
+  left: 50%;
+  background: rgba(36, 64, 125, .3);
+  border: 1px solid #fff;
+  border-radius: 3px;
+  transform: translate(-50%, -50%);
+}
+
+#exit-game-modal__btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 6rem;
+  width: 20rem;
+  transform: translate(-50%, -50%);
+}
+
+#exit-game-modal > span {
+  position: absolute;
+  bottom: 2rem;
+  width: 100%;
+  font-size: 2rem;
+  text-align: center;
 }

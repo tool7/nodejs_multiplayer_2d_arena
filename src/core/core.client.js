@@ -34,6 +34,7 @@ class GameCore {
     this.client_createNetConfiguration();
     // this.client_createDebugGUI();
 
+    this.gameHtmlElement = document.getElementById("game");
     this.app = new PIXI.Application({
       width: this.terrain.width,
       height: this.terrain.height,
@@ -41,44 +42,11 @@ class GameCore {
       transparent: false,
       resolution: 1
     });
+    this.gameHtmlElement.appendChild(this.app.view);
 
-    const gameContainer = document.getElementById("game");
-    gameContainer.appendChild(this.app.view);
-
-    this.initTextures();
-    this.initSounds();
-  }
-
-  initTextures () {
-    PIXI.loader.add([
-      "assets/wormhole.png",
-      "assets/basic_projectile.png",
-      "assets/game_background.png"
-    ])
-    .load(this.onTexturesLoaded.bind(this));
-  }
-
-  initSounds () {
-    createjs.Sound.registerSound("sounds/laser_2.mp3", "basic-shot");
-  }
-
-  onTexturesLoaded () {
     this.drawMap();
-
-    this.self = new Player(this.app, this.playerName, this.playerColor);
-    this.self.id = this.playerId;
-    this.self.registerEventListener("player-death", () => {
-      this.isPlayerAlive = false;
-    });
-
-    this.client_initConnectionHandlers();
-    this.client_createPingTimer();
-    this.client_initMouseMoveHandler();
-    this.client_initMouseClickHandler();
-
-    this.initPhysicsSimulation();
-
-    this.gameReady = true;
+    this.initSounds();
+    this.initGame();
   }
 
   drawMap () {
@@ -128,10 +96,31 @@ class GameCore {
     generateStarsEffect();
   }
 
+  initSounds () {
+    createjs.Sound.registerSound("sounds/laser_2.mp3", "basic-shot");
+  }
+
+  initGame () {
+    this.self = new Player(this.app, this.playerName, this.playerColor);
+    this.self.id = this.playerId;
+    this.self.registerEventListener("player-death", () => {
+      this.isPlayerAlive = false;
+    });
+
+    this.client_initConnectionHandlers();
+    this.client_createPingTimer();
+    this.client_initMouseMoveHandler();
+    this.client_initMouseClickHandler();
+
+    this.initPhysicsSimulation();
+
+    this.gameReady = true;
+  }
+
 
   // ========== CORE FUNCTIONS ==========
   initPhysicsSimulation () {
-    setInterval(() => {
+    this.physicsUpdateId = setInterval(() => {
       if (this.clientPrediction && this.isPlayerAlive) {
         this.client_prediction();
       }
@@ -144,7 +133,12 @@ class GameCore {
     this.client_update(startTime);
   }
 
-  stopUpdate () {
+  destroy () {
+    this.app.destroy();
+    this.gameHtmlElement.innerHTML = null;
+    this.socket.close();
+
+    clearInterval(this.physicsUpdateId);
     window.cancelAnimationFrame(this.updateId);
   }
   // ====================================
