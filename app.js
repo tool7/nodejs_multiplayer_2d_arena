@@ -31,6 +31,7 @@ server.listen(3000, () => {
   console.log('listening on *:3000');
 });
 
+// TODO: Move this logic to some connection manager class?
 io.on('connection', socket => {
   socket.playerId = uuidv4();
 
@@ -49,6 +50,13 @@ io.on('connection', socket => {
       socket.emit('connection-fail');
       return;
     }
+
+    socket.on('player-ready', data => {
+      const isPlayerReadySet = lobby.setPlayerReady(socket, data.gameName);
+      if (!isPlayerReadySet) {
+        socket.emit('connection-fail');
+      }
+    });
 
     socket.on('init-complete', () => {
       const isJoined = lobby.joinGame(socket, data.name);

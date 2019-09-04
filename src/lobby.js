@@ -8,7 +8,7 @@ module.exports = {
   fakeLatencyMessages: [],
   games: {
     'Test game': {
-      instance: new GameCore({ gameRoom: 'Test game' }),
+      instance: new GameCore({ gameRoom: 'Test game', requiredPlayersCount: 1 }),
       password: null
     }
   },
@@ -34,7 +34,7 @@ module.exports = {
     }  
     
     this.games[name] = {
-      instance: new GameCore({ gameRoom: name }),
+      instance: new GameCore({ gameRoom: name, requiredPlayersCount: 2 }),
       password
     };
 
@@ -94,6 +94,18 @@ module.exports = {
     });
   
     return true;
+  },
+
+  setPlayerReady (client, gameName) {
+    const game = this.games[gameName];
+    if (!game) { return false; }
+
+    const isPlayerReadySet = game.instance.server_setPlayerReady(client);
+    if (isPlayerReadySet) {
+      game.instance.server_startGameIfAllPlayersAreReady();
+    }
+    
+    return isPlayerReadySet;
   },
   
   onClientDisconnected (client, gameName) {

@@ -10,11 +10,11 @@ class Player {
     this.name = name;
     this.color = color;
 
+    this.isReady = false;
     this.inputs = [];
     this.angles = [];
     this.lastInputSeq = null;
     this.lastAngleSeq = null;
-
     this.health = 100;
     this.xVelocity = 0;
     this.yVelocity = 0;

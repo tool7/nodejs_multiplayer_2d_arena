@@ -281,6 +281,14 @@ li {
   transform: translate(-50%, -50%);
 }
 
+#exit-game-modal .title {
+  position: absolute;
+  top: 2rem;
+  width: 100%;
+  font-weight: normal;
+  text-transform: none;
+}
+
 #exit-game-modal__btn {
   position: absolute;
   top: 50%;
@@ -296,4 +304,52 @@ li {
   width: 100%;
   font-size: 2rem;
   text-align: center;
+}
+
+/* ===== PLAYER READY MODAL ===== */
+#player-ready-modal {
+  position: absolute;
+  width: 40rem;
+  height: 16rem;
+  top: 12%;
+  left: 50%;
+  background: rgba(36, 64, 125, .3);
+  border: 3px solid #fff;
+  border-radius: 3px;
+  transform: translate(-50%, -50%);
+}
+
+#player-ready-modal__press-button-text {
+  position: absolute;
+  top: 2rem;
+  width: 100%;
+  font-size: 2rem;
+  text-align: center;
+}
+
+#player-ready-modal__btn {
+  position: absolute;
+  top: 65%;
+  left: 50%;
+  height: 6rem;
+  width: 20rem;
+  transform: translate(-50%, -50%);
+}
+
+#player-ready-modal__waiting-text {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  font-size: 2.5rem;
+  text-align: center;
+  transform: translateY(-50%);
+}
+
+/* ===== GAME START COUNTDOWN NUMBER ===== */
+#game-start-countdown-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 20rem;
+  transform: translate(-50%, -50%);
 }

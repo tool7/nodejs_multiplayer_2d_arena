@@ -15,7 +15,6 @@ class Player extends SimpleEventEmitter {
     this.angles = [];
     this.lastInputSeq = null;
     this.lastAngleSeq = null;
-
     this.health = 100;
     this.xVelocity = 0;
     this.yVelocity = 0;

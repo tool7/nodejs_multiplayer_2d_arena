@@ -33,6 +33,7 @@ class GameCore {
     // So instead it must be used as *this.io.to(this.gameRoom).emit('EVENT');*
     this.io = connection.io;
     this.gameRoom = data.gameRoom;
+    this.requiredPlayersCount = data.requiredPlayersCount;
 
     this.sharedFunctions = new SharedFunctions();
     this.isStarted = false;
@@ -68,12 +69,8 @@ class GameCore {
 
   server_addPlayer (data) {
     const player = new Player(data.playerId, data.playerName, data.playerColor);
-    this.players.push(player);
+    this.players.push(player);  
 
-    if (!this.isStarted) {
-      this.start();
-    }
-    
     return player;
   }
 
@@ -84,6 +81,41 @@ class GameCore {
     if (this.players.length === 0) {
       this.stop();
     }
+  }
+
+  server_setPlayerReady (data) {
+    const player = this.players.find(p => p.id === data.playerId);
+    if (!player) { return false; }
+
+    player.isReady = true;
+    return true;
+  }
+
+  server_startGameIfAllPlayersAreReady () {
+    if (this.isStarted) { return; }
+
+    const playersReadyCount = this.players.filter(p => p.isReady).length;
+
+    if (playersReadyCount === this.requiredPlayersCount) {
+      this.server_startGameCountdown();
+    }
+  }
+
+  server_startGameCountdown () {
+    let secondsToStart = 5;
+
+    const emitCountdown = () => this.io.to(this.gameRoom).emit('game-start-countdown', secondsToStart);
+    emitCountdown();
+
+    const countdownIntervalId = setInterval(() => {
+      secondsToStart--;
+      emitCountdown();
+
+      if (secondsToStart <= 0) {
+        clearInterval(countdownIntervalId);
+        this.start();
+      }
+    }, 1000);    
   }
 
   server_update () {

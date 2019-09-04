@@ -1,4 +1,5 @@
 const state = {
+  socket: null,
   gameInstance: null,
   playerName: "",
   playerColor: 0xffffff,
@@ -185,6 +186,10 @@ const setupMenuEventHandlers = () => {
   const joinGameMenuJoinButton = document.getElementById("join-game-menu__join-btn");
   const joinGameMenuGamePasswordField = document.getElementById("join-game-menu__game-password-field");
 
+  const playerReadyModalButton = document.getElementById("player-ready-modal__btn");
+  const playerReadyModalPressBtnText = document.getElementById("player-ready-modal__press-button-text");
+  const playerReadyModalWaitingText = document.getElementById("player-ready-modal__waiting-text");
+  
   const gameContainer = document.getElementById("game-container");
   const exitGameModal = document.getElementById("exit-game-modal");
   const exitGameModalButton = document.getElementById("exit-game-modal__btn");
@@ -293,10 +298,30 @@ const setupMenuEventHandlers = () => {
     state.gameInstance.destroy();
     state.gameInstance = null;
   });
+
+  playerReadyModalButton.addEventListener("click", () => {
+    playerReadyModalButton.classList.add("hidden");
+    playerReadyModalPressBtnText.classList.add("hidden");
+    playerReadyModalWaitingText.classList.remove("hidden");
+
+    handlePlayerReady();
+  });
 };
 
 const storePlayerName = () => {
   localStorage.setItem("player-name", state.playerName);
+};
+
+const resetPlayerReadyState = () => {
+  const playerReadyModal = document.getElementById("player-ready-modal");
+  const playerReadyModalButton = document.getElementById("player-ready-modal__btn");
+  const playerReadyModalPressBtnText = document.getElementById("player-ready-modal__press-button-text");
+  const playerReadyModalWaitingText = document.getElementById("player-ready-modal__waiting-text");
+
+  playerReadyModal.classList.remove("hidden");
+  playerReadyModalButton.classList.remove("hidden");
+  playerReadyModalPressBtnText.classList.remove("hidden");
+  playerReadyModalWaitingText.classList.add("hidden");
 };
 
 const onJoinGameClick = async () => {
@@ -309,7 +334,9 @@ const onJoinGameClick = async () => {
   state.joinMenu.enteredGamePassword = joinGameMenuGamePasswordInput.value;
 
   try {
-    await startGame();
+    await joinGame();
+
+    resetPlayerReadyState();
     menuContainer.classList.add("hidden");
     gameContainer.classList.remove("hidden");
   }
@@ -318,28 +345,48 @@ const onJoinGameClick = async () => {
   }
 };
 
-const startGame = () => {
+const joinGame = () => {
   return new Promise((resolve, reject) => {
 
-    const socket = io.connect();
-    socket.emit("game-request", {
+    state.socket = io.connect();
+    state.socket.emit("game-request", {
       name: state.joinMenu.selectedGameName,
       password: state.joinMenu.enteredGamePassword,
       playerName: state.playerName,
       playerColor: state.playerColor
     });
   
-    socket.on("connection-success", data => {
+    state.socket.on("connection-success", data => {
+      state.gameInstance = new GameCore(state.socket, data.id, state.playerName, state.playerColor);
       resolve();
-
-      state.gameInstance = new GameCore(socket, data.id, state.playerName, state.playerColor);
-      state.gameInstance.start();
     });
   
-    socket.on("connection-fail", () => {
+    state.socket.on("connection-fail", () => {
       reject("Connection failed.");
     });
 
+  });
+};
+
+const handlePlayerReady = () => {
+  const playerReadyModal = document.getElementById("player-ready-modal");
+  const gameStartCoutdownNumber = document.getElementById("game-start-countdown-number");
+
+  state.socket.emit("player-ready", {
+    gameName: state.joinMenu.selectedGameName
+  });
+
+  state.socket.on("game-start-countdown", secondsToStart => {
+    playerReadyModal.classList.add("hidden");
+    gameStartCoutdownNumber.classList.remove("hidden");
+
+    gameStartCoutdownNumber.innerHTML = secondsToStart;
+
+    if (secondsToStart === 0) {
+      gameStartCoutdownNumber.classList.add("hidden");
+      
+      state.gameInstance.start();
+    }
   });
 };
 
