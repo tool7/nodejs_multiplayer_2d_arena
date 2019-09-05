@@ -98,6 +98,7 @@ class GameCore {
 
   initSounds () {
     createjs.Sound.registerSound("sounds/laser_2.mp3", "basic-shot");
+    createjs.Sound.registerSound("sounds/thrust.mp3", "ship-thrust");
   }
 
   initGame () {

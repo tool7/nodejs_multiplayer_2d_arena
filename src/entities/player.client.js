@@ -20,13 +20,31 @@ class Player extends SimpleEventEmitter {
     this.yVelocity = 0;
     this.maxVelocity = 4;
 
-    const texture = PIXI.loader.resources["assets/player_ship.png"].texture;
-    this.body = new PIXI.Sprite(texture);
+    const shipTexture = PIXI.loader.resources["assets/player_ship.png"].texture;
+    this.body = new PIXI.Sprite(shipTexture);
     this.body.tint = color;
     this.body.width = playerWidth;
     this.body.height = playerHeight;
     this.body.anchor.x = 0.5;
     this.body.anchor.y = 0.5;
+
+    const thrustTexture = PIXI.loader.resources["assets/thrust_fire.png"].texture;
+    this.leftThrust = new PIXI.Sprite(thrustTexture);
+    this.rightThrust = new PIXI.Sprite(thrustTexture);
+    this.leftThrust.anchor.x = 0.5;
+    this.leftThrust.anchor.y = 0.5;
+    this.leftThrust.width *= 1.2;
+    this.leftThrust.height *= 1.6;
+    this.leftThrust.x -= playerWidth;
+    this.leftThrust.y -= 22;
+    this.leftThrust.visible = false;
+    this.rightThrust.anchor.x = 0.5;
+    this.rightThrust.anchor.y = 0.5;
+    this.rightThrust.width *= 1.2;
+    this.rightThrust.height *= 1.6;
+    this.rightThrust.x -= playerWidth;
+    this.rightThrust.y += 22;
+    this.rightThrust.visible = false;
     
     this.playerNameText = new PIXI.Text(this.name, new PIXI.TextStyle({
       fontFamily: "Jura",
@@ -37,9 +55,46 @@ class Player extends SimpleEventEmitter {
     this.healthbar = new PIXI.Graphics();
     this.drawHealthbar();
 
+    this.body.addChild(this.leftThrust);
+    this.body.addChild(this.rightThrust);
     this.app.stage.addChild(this.body);
     this.app.stage.addChild(this.playerNameText);
     this.app.stage.addChild(this.healthbar);
+
+    this.registerKeyEventHandlers();
+  }
+
+  registerKeyEventHandlers () {
+    document.addEventListener("keydown", e => {
+      if (e.key.toLowerCase() !== "w") { return; }
+
+      this.leftThrust.visible = true;
+      this.rightThrust.visible = true;
+
+      if (!this.thrustSound) {
+        this.thrustSound = createjs.Sound.play("ship-thrust");
+      }
+
+      this.thrustSound.volume = 1;
+      this.thrustSound.play();
+      clearInterval(this.thrustSoundReduceIntervalId);
+    });
+
+    document.addEventListener("keyup", e => {
+      if (e.key.toLowerCase() !== "w") { return; }
+
+      this.leftThrust.visible = false;
+      this.rightThrust.visible = false;
+
+      this.thrustSoundReduceIntervalId = setInterval(() => {
+        this.thrustSound.volume -= 0.2;
+
+        if (this.thrustSound.volume <= 0) {
+          this.thrustSound.stop();
+          clearInterval(this.thrustSoundReduceIntervalId);
+        }
+      }, 100);
+    });
   }
 
   setInitialPosition (position) {

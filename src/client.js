@@ -83,6 +83,7 @@ const loadPixiTextures = async () => {
   return new Promise((resolve, reject) => {
     PIXI.loader.add([
       "assets/player_ship.png",
+      "assets/thrust_fire.png",
       "assets/wormhole.png",
       "assets/basic_projectile.png",
       "assets/game_background.png"

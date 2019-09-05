@@ -8,7 +8,7 @@ module.exports = {
   fakeLatencyMessages: [],
   games: {
     'Test game': {
-      instance: new GameCore({ gameRoom: 'Test game', requiredPlayersCount: 2 }),
+      instance: new GameCore({ gameRoom: 'Test game', requiredPlayersCount: 1 }),
       password: null
     }
   },
