@@ -3,7 +3,7 @@
 const SAT = require('sat');
 const uuidv4 = require('uuid/v4');
 
-const connection = require('../connection');
+const connectionService = require('../connection_service');
 
 require('./core.shared.js');
 require('./../entities/player.server.js');
@@ -28,10 +28,6 @@ require('./../entities/pathway.server.js');
 class GameCore {
 
   constructor (data) {
-    // Note: If *this.io.to(GAME_ROOM)* is passed to constructor or put it in a variable,
-    // using it to emit events will not work properly.
-    // So instead it must be used as *this.io.to(this.gameRoom).emit('EVENT');*
-    this.io = connection.io;
     this.gameRoom = data.gameRoom;
     this.requiredPlayersCount = data.requiredPlayersCount;
 
@@ -76,7 +72,7 @@ class GameCore {
 
   server_removePlayer (data) {
     this.players = this.players.filter(p => p.id !== data.playerId);
-    this.io.to(this.gameRoom).emit('player-disconnected', data.playerId);
+    connectionService.emit(this.gameRoom, 'player-disconnected', data.playerId);
 
     if (this.players.length === 0) {
       this.stop();
@@ -104,7 +100,7 @@ class GameCore {
   server_startGameCountdown () {
     let secondsToStart = 5;
 
-    const emitCountdown = () => this.io.to(this.gameRoom).emit('game-start-countdown', secondsToStart);
+    const emitCountdown = () => connectionService.emit(this.gameRoom, 'game-start-countdown', secondsToStart);
     emitCountdown();
 
     const countdownIntervalId = setInterval(() => {
@@ -130,7 +126,7 @@ class GameCore {
     });
 
     const dataToSend = this.sharedFunctions.encodeWorldSnapshotData({ players: playerData });
-    this.io.to(this.gameRoom).emit('server-update', dataToSend);
+    connectionService.emit(this.gameRoom, 'server-update', dataToSend);
 
     this.updateId = window.requestAnimationFrame(this.server_update.bind(this));
   }
@@ -157,7 +153,7 @@ class GameCore {
       const isOutOfBounds = this.sharedFunctions.isPositionOutOfBounds(pojectilePosition);
 
       if (isOutOfBounds) {
-        this.io.to(this.gameRoom).emit('projectile-destroyed', projectile.id);
+        connectionService.emit(this.gameRoom, 'projectile-destroyed', projectile.id);
 
         this.projectiles.splice(projectileIndex, 1);
       }
@@ -194,7 +190,7 @@ class GameCore {
     const projectile = new Projectile(options);
     this.projectiles.push(projectile);
 
-    this.io.to(this.gameRoom).emit('projectile-created', options);
+    connectionService.emit(this.gameRoom, 'projectile-created', options);
   }
 
   server_handleCollisions () {
@@ -218,8 +214,8 @@ class GameCore {
             health: player.health
           };
 
-          this.io.to(this.gameRoom).emit('projectile-destroyed', projectile.id);
-          this.io.to(this.gameRoom).emit('player-shot', shotPlayerData);
+          connectionService.emit(this.gameRoom, 'projectile-destroyed', projectile.id);
+          connectionService.emit(this.gameRoom, 'player-shot', shotPlayerData);
 
           this.projectiles.splice(projectileIndex, 1);
         }
