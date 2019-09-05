@@ -64,10 +64,15 @@ class GameCore {
   // ====================================
 
   server_addPlayer (data) {
+    if (this.server_isGameFull()) {
+      return false;
+    }
+
     const player = new Player(data.playerId, data.playerName, data.playerColor);
     this.players.push(player);  
 
-    return player;
+    this.server_setPlayerInitialPosition(player);
+    return true;
   }
 
   server_removePlayer (data) {
@@ -76,6 +81,29 @@ class GameCore {
 
     if (this.players.length === 0) {
       this.stop();
+    }
+  }
+
+  server_isGameFull () {
+    return this.players.length === this.requiredPlayersCount;
+  }
+
+  server_setPlayerInitialPosition (player) {
+    const positionIndex = this.players.length;
+
+    switch (positionIndex) {
+      case 0:
+        player.setInitialPosition({ x: 60, y: 60 });   
+        break;
+      case 1:
+        player.setInitialPosition({ x: 800, y: 60 });   
+        break;
+      case 2:
+        player.setInitialPosition({ x: 60, y: 600 });   
+        break;
+      case 3:
+        player.setInitialPosition({ x: 800, y: 600 });   
+        break;
     }
   }
 

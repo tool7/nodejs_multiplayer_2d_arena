@@ -8,13 +8,10 @@ module.exports = {
   fakeLatencyMessages: [],
   games: {
     'Test game': {
-      instance: new GameCore({ gameRoom: 'Test game', requiredPlayersCount: 1 }),
+      instance: new GameCore({ gameRoom: 'Test game', requiredPlayersCount: 2 }),
       password: null
     }
   },
-  currentGameMaxPlayers: 4,
-  currentGamePlayerSlots: [],
-  playerCount: 0,
 
   getGames () {
     return Object.keys(this.games)
@@ -44,14 +41,14 @@ module.exports = {
   onClientGameRequest (client, data) {
     const game = this.games[data.name];
     if (!game
-      || this.playerCount >= this.currentGameMaxPlayers
+      || game.instance.server_isGameFull()
       || (!!game.password && game.password !== data.password)) {
       return false;
     }
   
     client.gameInstance = game.instance;
   
-    const isPlayerAdded = this.putPlayerToFreeSlot(client);
+    const isPlayerAdded = this.tryPutPlayerToFreeSlot(client);
     if (!isPlayerAdded) {
       return false;
     }
@@ -111,11 +108,6 @@ module.exports = {
   onClientDisconnected (client, gameName) {
     const game = this.games[gameName];
     if (!game) { return; }
-  
-    this.playerCount--;
-  
-    let player = this.getPlayerById(client);
-    this.freeUpPlayerSlot(player);
 
     game.instance.server_removePlayer(client);
   },
@@ -205,48 +197,7 @@ module.exports = {
     return player;
   },
   
-  putPlayerToFreeSlot (client) {
-    const player = client.gameInstance.server_addPlayer(client);
-    let slotIndex = -1;
-  
-    for (let i = 0; i < this.currentGameMaxPlayers; i++) {
-      if (!this.currentGamePlayerSlots[i]) {
-        this.currentGamePlayerSlots[i] = player;
-        slotIndex = i;
-        break;
-      }
-    }
-  
-    if (slotIndex === -1) {
-      return false;
-    }
-  
-    this.setPlayerPositionBySlotIndex(player, slotIndex);
-    this.playerCount++;
-  
-    return true;
-  },
-  
-  freeUpPlayerSlot (player) {
-    let index = this.currentGamePlayerSlots.indexOf(player);
-    this.currentGamePlayerSlots[index] = null;
-  },
-  
-  setPlayerPositionBySlotIndex (player, index) {
-    // TODO: implement better way of setting player's initial position
-    switch (index) {
-      case 0:
-        player.setInitialPosition({ x: 60, y: 60 });   
-        break;
-      case 1:
-        player.setInitialPosition({ x: 800, y: 60 });   
-        break;
-      case 2:
-        player.setInitialPosition({ x: 60, y: 600 });   
-        break;
-      case 3:
-        player.setInitialPosition({ x: 800, y: 600 });   
-        break;
-    }
+  tryPutPlayerToFreeSlot (client) {
+    return client.gameInstance.server_addPlayer(client);
   }
 };
