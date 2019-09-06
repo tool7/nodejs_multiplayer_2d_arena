@@ -8,7 +8,7 @@ module.exports = {
   fakeLatencyMessages: [],
   games: {
     'Test game': {
-      instance: new GameCore({ gameRoom: 'Test game', requiredPlayersCount: 1 }),
+      instance: new GameCore({ gameRoom: 'Test game', requiredPlayersCount: 2 }),
       password: null
     }
   },
@@ -41,7 +41,7 @@ module.exports = {
   onClientGameRequest (client, data) {
     const game = this.games[data.name];
     if (!game
-      || game.instance.server_isGameFull()
+      || game.instance.server_isGameAvailableForJoin()
       || (!!game.password && game.password !== data.password)) {
       return false;
     }
@@ -109,7 +109,8 @@ module.exports = {
     const game = this.games[gameName];
     if (!game) { return; }
 
-    game.instance.server_removePlayer(client);
+    game.instance.server_removePlayer(client.playerId);
+    client.to(gameName).emit('player-disconnected', client.playerId);
   },
   
   onMessage (client, message) {

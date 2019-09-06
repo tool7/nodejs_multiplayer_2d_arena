@@ -298,6 +298,7 @@ const setupMenuEventHandlers = () => {
 
     state.gameInstance.destroy();
     state.gameInstance = null;
+    state.socket.close();
   });
 
   playerReadyModalButton.addEventListener("click", () => {
@@ -313,16 +314,18 @@ const storePlayerName = () => {
   localStorage.setItem("player-name", state.playerName);
 };
 
-const resetPlayerReadyState = () => {
+const resetInGameUI = () => {
   const playerReadyModal = document.getElementById("player-ready-modal");
   const playerReadyModalButton = document.getElementById("player-ready-modal__btn");
   const playerReadyModalPressBtnText = document.getElementById("player-ready-modal__press-button-text");
   const playerReadyModalWaitingText = document.getElementById("player-ready-modal__waiting-text");
+  const gameEndModal = document.getElementById("game-end-modal");
 
   playerReadyModal.classList.remove("hidden");
   playerReadyModalButton.classList.remove("hidden");
   playerReadyModalPressBtnText.classList.remove("hidden");
   playerReadyModalWaitingText.classList.add("hidden");
+  gameEndModal.classList.add("hidden");
 };
 
 const onJoinGameClick = async () => {
@@ -335,9 +338,9 @@ const onJoinGameClick = async () => {
   state.joinMenu.enteredGamePassword = joinGameMenuGamePasswordInput.value;
 
   try {
-    await joinGame();
+    await establishGameConnection();
 
-    resetPlayerReadyState();
+    resetInGameUI();
     menuContainer.classList.add("hidden");
     gameContainer.classList.remove("hidden");
   }
@@ -346,7 +349,11 @@ const onJoinGameClick = async () => {
   }
 };
 
-const joinGame = () => {
+const establishGameConnection = () => {
+  const playerReadyModal = document.getElementById("player-ready-modal");
+  const gameStartCoutdownNumber = document.getElementById("game-start-countdown-number");
+  const gameEndModal = document.getElementById("game-end-modal");
+
   return new Promise((resolve, reject) => {
 
     state.socket = io.connect();
@@ -359,6 +366,12 @@ const joinGame = () => {
   
     state.socket.on("connection-success", data => {
       state.gameInstance = new GameCore(state.socket, data.id, state.playerName, state.playerColor);
+
+      state.gameInstance.registerEventListener("game-end-message", message => {
+        gameEndModal.innerHTML = message;
+        gameEndModal.classList.remove("hidden");
+      });
+
       resolve();
     });
   
@@ -366,28 +379,24 @@ const joinGame = () => {
       reject("Connection failed.");
     });
 
+    state.socket.on("game-start-countdown", secondsToStart => {
+      playerReadyModal.classList.add("hidden");
+      gameStartCoutdownNumber.classList.remove("hidden");
+
+      gameStartCoutdownNumber.innerHTML = secondsToStart;
+
+      if (secondsToStart === 0) {
+        gameStartCoutdownNumber.classList.add("hidden");
+        
+        state.gameInstance.start();
+      }
+    });
   });
 };
 
 const handlePlayerReady = () => {
-  const playerReadyModal = document.getElementById("player-ready-modal");
-  const gameStartCoutdownNumber = document.getElementById("game-start-countdown-number");
-
   state.socket.emit("player-ready", {
     gameName: state.joinMenu.selectedGameName
-  });
-
-  state.socket.on("game-start-countdown", secondsToStart => {
-    playerReadyModal.classList.add("hidden");
-    gameStartCoutdownNumber.classList.remove("hidden");
-
-    gameStartCoutdownNumber.innerHTML = secondsToStart;
-
-    if (secondsToStart === 0) {
-      gameStartCoutdownNumber.classList.add("hidden");
-      
-      state.gameInstance.start();
-    }
   });
 };
 

@@ -271,6 +271,7 @@ li {
 /* ===== EXIT GAME MODAL ===== */
 #exit-game-modal {
   position: absolute;
+  z-index: 1000;
   width: 40rem;
   height: 30rem;
   top: 50%;
@@ -351,5 +352,17 @@ li {
   top: 50%;
   left: 50%;
   font-size: 20rem;
+  transform: translate(-50%, -50%);
+}
+
+/* ===== GAME END MODAL ===== */
+#game-end-modal {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  width: 80%;
+  text-align: center;
+  font-size: 8rem;
+  font-weight: bold;
   transform: translate(-50%, -50%);
 }

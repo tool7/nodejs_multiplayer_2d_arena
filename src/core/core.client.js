@@ -1,8 +1,10 @@
 // each frame is run every 16ms (~ 60fps)
 
-class GameCore {
+class GameCore extends SimpleEventEmitter {
 
   constructor (socket, playerId, playerName, playerColor) {
+    super();
+    
     this.socket = socket;
     this.playerId = playerId;
     this.playerName = playerName;
@@ -10,7 +12,6 @@ class GameCore {
 
     this.sharedFunctions = new SharedFunctions();
     this.gameReady = false;
-    this.isPlayerAlive = true;
 
     this.terrain = {
       width: 1000,
@@ -104,9 +105,6 @@ class GameCore {
   initGame () {
     this.self = new Player(this.app, this.playerName, this.playerColor);
     this.self.id = this.playerId;
-    this.self.registerEventListener("player-death", () => {
-      this.isPlayerAlive = false;
-    });
 
     this.client_initConnectionHandlers();
     this.client_createPingTimer();
@@ -122,7 +120,7 @@ class GameCore {
   // ========== CORE FUNCTIONS ==========
   initPhysicsSimulation () {
     this.physicsUpdateId = setInterval(() => {
-      if (this.clientPrediction && this.isPlayerAlive) {
+      if (this.clientPrediction && this.self.isAlive) {
         this.client_prediction();
       }
       this.client_updateProjectilesPositions();
@@ -134,13 +132,16 @@ class GameCore {
     this.client_update(startTime);
   }
 
+  stop () {
+    clearInterval(this.physicsUpdateId);
+    window.cancelAnimationFrame(this.updateId);
+  }
+
   destroy () {
     this.app.destroy();
     this.gameHtmlElement.innerHTML = null;
-    this.socket.close();
 
-    clearInterval(this.physicsUpdateId);
-    window.cancelAnimationFrame(this.updateId);
+    this.stop();
   }
   // ====================================
 
@@ -183,13 +184,12 @@ class GameCore {
     this.socket.on('initial-game-state', this.client_initGameState.bind(this));
     this.socket.on('player-connected', this.client_onPlayerConnected.bind(this));
     this.socket.on('player-disconnected', this.client_onPlayerDisconnected.bind(this));
-
     this.socket.on('server-update', this.client_onServerUpdateReceived.bind(this));
     this.socket.on('message', this.client_onServerMessage.bind(this));
-
     this.socket.on('projectile-created', this.client_onProjectileCreated.bind(this));
     this.socket.on('projectile-destroyed', this.client_onProjectileDestroyed.bind(this));
     this.socket.on('player-shot', this.client_onPlayerShot.bind(this));
+    this.socket.on('game-end', this.client_onGameEnd.bind(this));
 
     this.socket.emit('init-complete');
   }
@@ -227,7 +227,7 @@ class GameCore {
       this.serverUpdates.splice(0, 1);
     }
 
-    if (this.isPlayerAlive) {
+    if (this.self.isAlive) {
       this.client_processInputPredictionCorrection();
       this.client_processAnglePredictionCorrection();
     }
@@ -315,6 +315,24 @@ class GameCore {
     }, {});
   }
 
+  client_onGameEnd (winnerId) {
+    let gameEndMessage = "";
+
+    if (this.self.id === winnerId) {
+      gameEndMessage = "You win!"
+    }
+    else if (this.otherPlayers[winnerId]) {
+      gameEndMessage = `${this.otherPlayers[winnerId].name} is winner.`;
+    }
+
+    this.dispatch("game-end-message", gameEndMessage);
+
+    const intervalId = setInterval(() => {
+      this.stop();
+      clearInterval(intervalId);
+    }, 3000);
+  }
+
   client_onPlayerConnected (data) {
     const player = new Player(this.app, data.name, data.color);
     player.setInitialPosition(data.position);
@@ -379,7 +397,7 @@ class GameCore {
     this.fps = (1 / this.updateDeltaTime).toFixed();
 
     if (this.gameReady) {
-      if (this.isPlayerAlive) {
+      if (this.self.isAlive) {
         this.client_handleInput();
         this.client_handleMouseMove();
       }

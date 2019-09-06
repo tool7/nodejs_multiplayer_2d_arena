@@ -11,6 +11,7 @@ class Player {
     this.color = color;
 
     this.isReady = false;
+    this.isAlive = true;
     this.inputs = [];
     this.angles = [];
     this.lastInputSeq = null;

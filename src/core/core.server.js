@@ -64,27 +64,25 @@ class GameCore {
   // ====================================
 
   server_addPlayer (data) {
-    if (this.server_isGameFull()) {
+    if (this.server_isGameAvailableForJoin()) {
       return false;
     }
 
     const player = new Player(data.playerId, data.playerName, data.playerColor);
-    this.players.push(player);  
+    this.players.push(player);
 
     this.server_setPlayerInitialPosition(player);
     return true;
   }
 
-  server_removePlayer (data) {
-    this.players = this.players.filter(p => p.id !== data.playerId);
-    connectionService.emit(this.gameRoom, 'player-disconnected', data.playerId);
-
-    if (this.players.length === 0) {
-      this.stop();
-    }
+  server_removePlayer (playerId) {
+    this.players = this.players.filter(p => p.id !== playerId);
   }
 
-  server_isGameFull () {
+  server_isGameAvailableForJoin () {
+    if (this.isStarted) {
+      return false;
+    }
     return this.players.length === this.requiredPlayersCount;
   }
 
@@ -115,12 +113,18 @@ class GameCore {
     return true;
   }
 
+  server_onPlayerDeath (player) {
+    player.isAlive = false;
+
+    this.server_endGameIfThereIsWinner();
+  }
+
   server_startGameIfAllPlayersAreReady () {
     if (this.isStarted) { return; }
 
-    const playersReadyCount = this.players.filter(p => p.isReady).length;
+    const readyPlayersCount = this.players.filter(p => p.isReady).length;
 
-    if (playersReadyCount === this.requiredPlayersCount) {
+    if (readyPlayersCount === this.requiredPlayersCount) {
       this.server_startGameCountdown();
     }
   }
@@ -140,6 +144,20 @@ class GameCore {
         this.start();
       }
     }, 1000);    
+  }
+
+  server_endGameIfThereIsWinner() {
+    if (!this.isStarted) { return; }
+
+    const alivePlayersCount = this.players.filter(p => p.isAlive).length;
+
+    // TODO: Comment this out for debugging purpose
+    if (alivePlayersCount === 1) {
+      const winner = this.players.find(p => p.isAlive);
+      connectionService.emit(this.gameRoom, 'game-end', winner.id);
+
+      this.stop();
+    }
   }
 
   server_update () {
@@ -282,10 +300,6 @@ class GameCore {
 
   server_isPlayerWormholeCollision (player, wormhole) {
     return SAT.testCircleCircle(player, wormhole);
-  }
-
-  server_onPlayerDeath (player) {
-    this.players = this.players.filter(p => p.id !== player.id);
   }
 }
 

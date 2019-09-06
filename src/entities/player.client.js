@@ -3,14 +3,13 @@ const playerWidth = 46;
 const healthbarWidth = 80;
 const healthbarHeight = 5;
 
-class Player extends SimpleEventEmitter {
+class Player {
 
   constructor (app, name, color) {
-    super();
-
     this.app = app;
     this.name = name;
 
+    this.isAlive = true;
     this.inputs = [];
     this.angles = [];
     this.lastInputSeq = null;
@@ -132,9 +131,8 @@ class Player extends SimpleEventEmitter {
   onPlayerDeath () {
     // TODO: Create explosion sprite at player position
 
+    this.isAlive = false;
     this.health = 0;
-
-    this.dispatch("player-death");
     this.remove();
   }
 
