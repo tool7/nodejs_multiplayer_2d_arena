@@ -32,7 +32,7 @@ class GameCore {
     this.requiredPlayersCount = data.requiredPlayersCount;
 
     this.sharedFunctions = new SharedFunctions();
-    this.isStarted = false;
+    this.isGameStarted = false;
     this.players = [];
     this.projectiles = [];
     this.pathways = [
@@ -49,14 +49,14 @@ class GameCore {
   }
 
   start () {
-    this.isStarted = true;
+    this.isGameStarted = true;
 
     this.initPhysicsSimulation();
     this.server_update();
   }
 
   stop () {
-    this.isStarted = false;
+    this.isGameStarted = false;
 
     clearInterval(this.physicsUpdateId);
     window.cancelAnimationFrame(this.updateId);
@@ -80,7 +80,7 @@ class GameCore {
   }
 
   server_isGameAvailableForJoin () {
-    if (this.isStarted) {
+    if (this.isGameStarted) {
       return false;
     }
     return this.players.length === this.requiredPlayersCount;
@@ -120,7 +120,7 @@ class GameCore {
   }
 
   server_startGameIfAllPlayersAreReady () {
-    if (this.isStarted) { return; }
+    if (this.isGameStarted) { return; }
 
     const readyPlayersCount = this.players.filter(p => p.isReady).length;
 
@@ -147,7 +147,7 @@ class GameCore {
   }
 
   server_endGameIfThereIsWinner() {
-    if (!this.isStarted) { return; }
+    if (!this.isGameStarted) { return; }
 
     const alivePlayersCount = this.players.filter(p => p.isAlive).length;
 

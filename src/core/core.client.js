@@ -11,7 +11,7 @@ class GameCore extends SimpleEventEmitter {
     this.playerColor = playerColor;
 
     this.sharedFunctions = new SharedFunctions();
-    this.gameReady = false;
+    this.isGameStarted = false;
 
     this.terrain = {
       width: 1000,
@@ -112,8 +112,6 @@ class GameCore extends SimpleEventEmitter {
     this.client_initMouseClickHandler();
 
     this.initPhysicsSimulation();
-
-    this.gameReady = true;
   }
 
 
@@ -128,11 +126,15 @@ class GameCore extends SimpleEventEmitter {
   }
 
   start () {
+    this.isGameStarted = true;
+
     const startTime = new Date().getTime();
     this.client_update(startTime);
   }
 
   stop () {
+    this.isGameStarted = false;
+
     clearInterval(this.physicsUpdateId);
     window.cancelAnimationFrame(this.updateId);
   }
@@ -382,12 +384,10 @@ class GameCore extends SimpleEventEmitter {
   }
 
   client_initMouseClickHandler () {
-    this.app.view.onmousedown = event => {
-      const x = event.x;
-      const y = event.y;
+    this.app.view.onmousedown = () => {
+      if (!this.isGameStarted) { return; }
 
-      const projectilePacket = `f.${ x }-${ y }`;
-      this.socket.send(projectilePacket);
+      this.client_handleMouseClick();
     };
   }
 
@@ -396,15 +396,13 @@ class GameCore extends SimpleEventEmitter {
     this.updateDeltaTimeLast = time;
     this.fps = (1 / this.updateDeltaTime).toFixed();
 
-    if (this.gameReady) {
-      if (this.self.isAlive) {
-        this.client_handleInput();
-        this.client_handleMouseMove();
-      }
-
-      this.client_updatePlayersPositions();
-      this.client_updateOtherPlayersThrustEffect();
+    if (this.self.isAlive) {
+      this.client_handleInput();
+      this.client_handleMouseMove();
     }
+
+    this.client_updatePlayersPositions();
+    this.client_updateOtherPlayersThrustEffect();
 
     this.updateId = window.requestAnimationFrame(this.client_update.bind(this));
   }
@@ -440,9 +438,8 @@ class GameCore extends SimpleEventEmitter {
   }
 
   client_handleMouseMove () {
-    let x = this.mouse.position.x;
-    let y = this.mouse.position.y;
-    let angle = this.sharedFunctions.angleBetweenPoints(this.self.body.position, { x, y });
+    const { x, y } = this.mouse.position;
+    const angle = this.sharedFunctions.angleBetweenPoints(this.self.body.position, { x, y });
 
     this.angleSeq++;
 
@@ -453,6 +450,13 @@ class GameCore extends SimpleEventEmitter {
 
     const mousePacket = `m.${ x }-${ y }.${ this.angleSeq }`;
     this.socket.send(mousePacket);
+  }
+
+  client_handleMouseClick () {
+    const { x, y } = this.mouse.position;
+
+    const projectilePacket = `f.${ x }-${ y }`;
+    this.socket.send(projectilePacket);
   }
 
   client_updatePlayersPositions () {
