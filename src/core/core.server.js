@@ -167,7 +167,8 @@ class GameCore {
         position: Object.assign({}, player.body.position),
         rotation: player.body.rotation,
         lastInputSeq: +player.lastInputSeq,
-        lastAngleSeq: +player.lastAngleSeq
+        lastAngleSeq: +player.lastAngleSeq,
+        thrustEffect: player.isDriving ? 1 : 0
       };
     });
 

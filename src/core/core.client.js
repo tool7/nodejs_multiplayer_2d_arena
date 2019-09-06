@@ -403,6 +403,7 @@ class GameCore extends SimpleEventEmitter {
       }
 
       this.client_updatePlayersPositions();
+      this.client_updateOtherPlayersThrustEffect();
     }
 
     this.updateId = window.requestAnimationFrame(this.client_update.bind(this));
@@ -419,21 +420,23 @@ class GameCore extends SimpleEventEmitter {
   client_handleInput () {
     let input = null;
 
-    if (this.keyboard.pressed('W') || this.keyboard.pressed('up')) {
-      input = 'f';
+    if (this.keyboard.pressed('W')) {
+      input = 'd+';
+    } else {
+      input = 'd-';
     }
 
-    if (input) {
-      this.inputSeq++;
+    if (!input) { return; }
 
-      this.self.inputs.push({
-        value: input,
-        seq: this.inputSeq
-      });
+    this.inputSeq++;
 
-      const inputPacket = `i.${ input }.${ this.inputSeq }`;
-      this.socket.send(inputPacket);
-    }
+    this.self.inputs.push({
+      value: input,
+      seq: this.inputSeq
+    });
+
+    const inputPacket = `i.${ input }.${ this.inputSeq }`;
+    this.socket.send(inputPacket);
   }
 
   client_handleMouseMove () {
@@ -506,6 +509,21 @@ class GameCore extends SimpleEventEmitter {
       this.self.moveTo(targetPlayerState.position);
       this.self.rotateTo(targetPlayerState.rotation);
     }
+  }
+
+  client_updateOtherPlayersThrustEffect () {
+    if (!this.serverUpdates.length) { return; }
+
+    const latestServerData = this.serverUpdates[this.serverUpdates.length - 1];
+
+    Object.keys(this.otherPlayers).forEach(id => {
+      const playerData = latestServerData.players[id];
+      const player = this.otherPlayers[id];
+
+      if (!playerData) { return; }
+
+      player.updateThrustEffect(playerData.thrustEffect);
+    });
   }
 
   client_updateProjectilesPositions () {

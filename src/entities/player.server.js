@@ -12,6 +12,8 @@ class Player {
 
     this.isReady = false;
     this.isAlive = true;
+    this.isDriving = false;
+
     this.inputs = [];
     this.angles = [];
     this.lastInputSeq = null;
@@ -50,6 +52,12 @@ class Player {
     if (Math.abs(newYVelocity) < this.maxVelocity) {
       this.yVelocity = newYVelocity;
     }
+
+    this.isDriving = true;
+  }
+
+  stopDriving () {
+    this.isDriving = false;
   }
 
   update () {

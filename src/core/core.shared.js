@@ -9,6 +9,7 @@
       };
     }
 
+    // On client side this is only called for "self" player
     processPlayerInput (player) {
       let inputsLength = player.inputs.length;
       if (!inputsLength) { return; }
@@ -17,8 +18,11 @@
         if (player.inputs[i].seq <= player.lastInputSeq) { continue; }
   
         const command = player.inputs[i].value;
-        if (command === "f") {
+
+        if (command === "d+") {
           player.drive();
+        } else if (command === "d-") {
+          player.stopDriving();
         }
       }
       player.lastInputSeq = player.inputs[inputsLength - 1].seq;
@@ -95,7 +99,7 @@
       };
 
       data.players.forEach(p => {
-        encodedData.players[p.id] = `${ p.position.x }-${ p.position.y };${ p.rotation };${ p.lastInputSeq };${ p.lastAngleSeq }`
+        encodedData.players[p.id] = `${ p.position.x }-${ p.position.y };${ p.rotation };${ p.lastInputSeq };${ p.lastAngleSeq };${ p.thrustEffect }`
       });
 
       return encodedData;
@@ -112,7 +116,8 @@
           position: { x: +encodedPlayerPosition[0], y: +encodedPlayerPosition[1] },
           rotation: +encodedPlayerData[1],
           lastInputSeq: +encodedPlayerData[2],
-          lastAngleSeq: +encodedPlayerData[3]
+          lastAngleSeq: +encodedPlayerData[3],
+          thrustEffect: !!+encodedPlayerData[4]
         };
       });
 

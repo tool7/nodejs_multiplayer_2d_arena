@@ -10,6 +10,8 @@ class Player {
     this.name = name;
 
     this.isAlive = true;
+    this.isDriving = false;
+
     this.inputs = [];
     this.angles = [];
     this.lastInputSeq = null;
@@ -59,41 +61,6 @@ class Player {
     this.app.stage.addChild(this.body);
     this.app.stage.addChild(this.playerNameText);
     this.app.stage.addChild(this.healthbar);
-
-    this.registerKeyEventHandlers();
-  }
-
-  registerKeyEventHandlers () {
-    document.addEventListener("keydown", e => {
-      if (e.key.toLowerCase() !== "w") { return; }
-
-      this.leftThrust.visible = true;
-      this.rightThrust.visible = true;
-
-      if (!this.thrustSound) {
-        this.thrustSound = createjs.Sound.play("ship-thrust");
-      }
-
-      this.thrustSound.volume = 1;
-      this.thrustSound.play();
-      clearInterval(this.thrustSoundReduceIntervalId);
-    });
-
-    document.addEventListener("keyup", e => {
-      if (e.key.toLowerCase() !== "w") { return; }
-
-      this.leftThrust.visible = false;
-      this.rightThrust.visible = false;
-
-      this.thrustSoundReduceIntervalId = setInterval(() => {
-        this.thrustSound.volume -= 0.2;
-
-        if (this.thrustSound.volume <= 0) {
-          this.thrustSound.stop();
-          clearInterval(this.thrustSoundReduceIntervalId);
-        }
-      }, 100);
-    });
   }
 
   setInitialPosition (position) {
@@ -152,6 +119,16 @@ class Player {
     if (Math.abs(newYVelocity) < this.maxVelocity) {
       this.yVelocity = newYVelocity;
     }
+
+    this.isDriving = true;
+    this.updateThrustEffect(true);
+  }
+
+  stopDriving () {
+    if (!this.isDriving) { return; }
+
+    this.isDriving = false;
+    this.updateThrustEffect(false);
   }
 
   update () {
@@ -180,6 +157,39 @@ class Player {
 
   rotateTo (radians) {
     this.body.rotation = radians;
+  }
+
+  updateThrustEffect (isEnabled) {
+    if (!this.thrustSound) {
+      this.thrustSound = createjs.Sound.play("ship-thrust");
+      this.thrustSound.volume = 0;
+    }
+    
+    if (isEnabled) {
+      this.leftThrust.visible = true;
+      this.rightThrust.visible = true;
+
+      this.thrustSound.volume = 0.3;
+      this.thrustSound.play();
+
+      clearInterval(this.thrustSoundReduceIntervalId);
+      this.thrustSoundReduceIntervalId = null;
+    }
+    else {
+      this.leftThrust.visible = false;
+      this.rightThrust.visible = false;
+  
+      this.thrustSoundReduceIntervalId = setInterval(() => {
+        this.thrustSound.volume -= 0.1;
+  
+        if (this.thrustSound.volume <= 0) {
+          this.thrustSound.stop();
+
+          clearInterval(this.thrustSoundReduceIntervalId);
+          this.thrustSoundReduceIntervalId = null;
+        }
+      }, 100);
+    } 
   }
 
   remove () {
