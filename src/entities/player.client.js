@@ -46,6 +46,20 @@ class Player {
     this.rightThrust.x -= playerWidth;
     this.rightThrust.y += 22;
     this.rightThrust.visible = false;
+
+    const explosionTextures = [];
+    for (let i = 1; i < 10; i++) {
+      const texture = PIXI.loader.resources[`assets/ship_explosion/${i}.png`].texture;
+      explosionTextures.push(texture);
+    }
+    this.explosion = new PIXI.AnimatedSprite(explosionTextures);
+    this.explosion.visible = false;
+    this.explosion.loop = false;
+    this.explosion.anchor.set(0.5);
+    this.explosion.animationSpeed = 0.2;
+    this.explosion.onComplete = () => {
+      this.app.stage.removeChild(this.explosion);
+    };
     
     this.playerNameText = new PIXI.Text(this.name, new PIXI.TextStyle({
       fontFamily: "Jura",
@@ -58,6 +72,7 @@ class Player {
 
     this.body.addChild(this.leftThrust);
     this.body.addChild(this.rightThrust);
+    this.app.stage.addChild(this.explosion);
     this.app.stage.addChild(this.body);
     this.app.stage.addChild(this.playerNameText);
     this.app.stage.addChild(this.healthbar);
@@ -95,8 +110,17 @@ class Player {
     this.healthbar.endFill();
   }
 
+  playExplosionAnimation () {
+    createjs.Sound.play("ship-explosion");
+
+    this.explosion.x = this.body.x;
+    this.explosion.y = this.body.y;
+    this.explosion.visible = true;
+    this.explosion.play();
+  }
+
   onPlayerDeath () {
-    // TODO: Create explosion sprite at player position
+    this.playExplosionAnimation();
 
     this.isAlive = false;
     this.health = 0;

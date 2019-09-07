@@ -86,7 +86,16 @@ const loadPixiTextures = async () => {
       "assets/thrust_fire.png",
       "assets/wormhole.png",
       "assets/basic_projectile.png",
-      "assets/game_background.png"
+      "assets/game_background.png",
+      "assets/ship_explosion/1.png",
+      "assets/ship_explosion/2.png",
+      "assets/ship_explosion/3.png",
+      "assets/ship_explosion/4.png",
+      "assets/ship_explosion/5.png",
+      "assets/ship_explosion/6.png",
+      "assets/ship_explosion/7.png",
+      "assets/ship_explosion/8.png",
+      "assets/ship_explosion/9.png"
     ])
     .load(resolve);
   });
