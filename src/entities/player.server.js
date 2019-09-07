@@ -32,7 +32,7 @@ class Player {
     };
   }
 
-  setInitialPosition (position) {
+  setPosition (position) {
     this.moveTo(position);
   }
 

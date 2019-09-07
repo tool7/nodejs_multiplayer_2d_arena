@@ -101,6 +101,7 @@ class GameCore extends SimpleEventEmitter {
     createjs.Sound.registerSound("sounds/laser_2.mp3", "basic-shot");
     createjs.Sound.registerSound("sounds/thrust.mp3", "ship-thrust");
     createjs.Sound.registerSound("sounds/ship_explosion.mp3", "ship-explosion");
+    createjs.Sound.registerSound("sounds/ship_hit.mp3", "ship-hit");
   }
 
   initGame () {
@@ -294,11 +295,11 @@ class GameCore extends SimpleEventEmitter {
     let selfData = data.players.find(p => p.id === this.self.id);
     let otherPlayersData = data.players.filter(p => p.id !== this.self.id);
 
-    this.self.setInitialPosition(selfData.position);
+    this.self.setPosition(selfData.position);
 
     this.otherPlayers = otherPlayersData.reduce((obj, p) => {
       const player = new Player(this.app, p.name, p.color);
-      player.setInitialPosition(p.position);
+      player.setPosition(p.position);
       player.setHealth(p.health);
 
       obj[p.id] = player;
@@ -338,7 +339,7 @@ class GameCore extends SimpleEventEmitter {
 
   client_onPlayerConnected (data) {
     const player = new Player(this.app, data.name, data.color);
-    player.setInitialPosition(data.position);
+    player.setPosition(data.position);
 
     this.otherPlayers[data.id] = player;
   }
@@ -353,9 +354,6 @@ class GameCore extends SimpleEventEmitter {
   client_onProjectileCreated (data) {
     const projectile = new Projectile(this, data);
     this.projectiles[projectile.id] = projectile;
-
-    // TODO: place somewhere else?
-    createjs.Sound.play("basic-shot");
   }
 
   client_onProjectileDestroyed (id) {
@@ -367,13 +365,13 @@ class GameCore extends SimpleEventEmitter {
 
   client_onPlayerShot (player) {
     if (this.self.id === player.id) {
-      this.self.setHealth(player.health);
+      this.self.onShot(player.health);
       return;
     }
     
     const otherPlayer = this.otherPlayers[player.id];
     if (otherPlayer) {
-      otherPlayer.setHealth(player.health);
+      otherPlayer.onShot(player.health);
     }
   }
 

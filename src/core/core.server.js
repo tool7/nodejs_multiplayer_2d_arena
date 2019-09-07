@@ -91,16 +91,16 @@ class GameCore {
 
     switch (positionIndex) {
       case 0:
-        player.setInitialPosition({ x: 60, y: 60 });   
+        player.setPosition({ x: 60, y: 60 });   
         break;
       case 1:
-        player.setInitialPosition({ x: 800, y: 60 });   
+        player.setPosition({ x: 800, y: 60 });   
         break;
       case 2:
-        player.setInitialPosition({ x: 60, y: 600 });   
+        player.setPosition({ x: 60, y: 600 });   
         break;
       case 3:
-        player.setInitialPosition({ x: 800, y: 600 });   
+        player.setPosition({ x: 800, y: 600 });   
         break;
     }
   }

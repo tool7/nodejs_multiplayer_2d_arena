@@ -8,6 +8,7 @@ class Player {
   constructor (app, name, color) {
     this.app = app;
     this.name = name;
+    this.color = color;
 
     this.isAlive = true;
     this.isDriving = false;
@@ -78,18 +79,31 @@ class Player {
     this.app.stage.addChild(this.healthbar);
   }
 
-  setInitialPosition (position) {
+  setPosition (position) {
     this.moveTo(position);
   }
 
   setHealth (value) {
     if (value <= 0) {
-      this.onPlayerDeath();
+      this.onDeath();
       return;
     }
 
     this.health = value;
+  }
+
+  onShot (newHp) {
+    this.setHealth(newHp);
     this.drawHealthbar();
+    this.playShotBlinkEffect();
+  }
+
+  onDeath () {
+    this.playExplosionAnimation();
+
+    this.isAlive = false;
+    this.health = 0;
+    this.remove();
   }
 
   drawHealthbar () {
@@ -110,6 +124,28 @@ class Player {
     this.healthbar.endFill();
   }
 
+  playShotBlinkEffect () {
+    createjs.Sound.play("ship-hit");
+
+    let blinkEffectCount = 6;
+    clearInterval(this.blinkIntervalId);
+
+    this.blinkIntervalId = setInterval(() => {
+      if (blinkEffectCount % 2 === 0) {
+        this.body.tint = 0xffffff;
+      } else {
+        this.body.tint = this.color;
+      }
+
+      if (blinkEffectCount <= 0) {
+        this.body.tint = this.color;
+        clearInterval(this.blinkIntervalId);
+      }
+
+      blinkEffectCount--;
+    }, 30);
+  }
+
   playExplosionAnimation () {
     createjs.Sound.play("ship-explosion");
 
@@ -117,14 +153,6 @@ class Player {
     this.explosion.y = this.body.y;
     this.explosion.visible = true;
     this.explosion.play();
-  }
-
-  onPlayerDeath () {
-    this.playExplosionAnimation();
-
-    this.isAlive = false;
-    this.health = 0;
-    this.remove();
   }
 
   drive () {

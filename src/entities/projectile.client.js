@@ -3,14 +3,13 @@ class Projectile {
   constructor (gameInstance, options) {
     this.game = gameInstance;
     
-    let { x, y } = options.startingPosition;
+    const { x, y } = options.startingPosition;
 
     this.id = options.id;
     this.playerId = options.playerId;
     this.damage = options.damage;
 
-    let texture = PIXI.loader.resources["assets/basic_projectile.png"].texture;
-
+    const texture = PIXI.loader.resources["assets/basic_projectile.png"].texture;
     this.body = new PIXI.Sprite(texture);
 
     // TODO: set dynamically depending on projectile type
@@ -26,6 +25,8 @@ class Projectile {
     this.velocity_y = this.velocity * Math.sin(options.angle);
 
     this.game.app.stage.addChild(this.body);
+
+    createjs.Sound.play("basic-shot");
   }
 
   move () {
