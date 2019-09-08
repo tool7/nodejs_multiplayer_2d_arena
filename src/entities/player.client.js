@@ -98,12 +98,22 @@ class Player {
     this.playShotBlinkEffect();
   }
 
+  onHealthPickupTaken (newHp) {
+    this.setHealth(newHp);
+    this.drawHealthbar();
+    this.playHealEffect();
+  }
+
+  onShieldPickupTaken () {
+    
+  }
+
   onDeath () {
     this.playExplosionAnimation();
 
     this.isAlive = false;
     this.health = 0;
-    this.remove();
+    this.destroy();
   }
 
   drawHealthbar () {
@@ -144,6 +154,10 @@ class Player {
 
       blinkEffectCount--;
     }, 30);
+  }
+
+  playHealEffect () {
+
   }
 
   playExplosionAnimation () {
@@ -244,7 +258,7 @@ class Player {
     } 
   }
 
-  remove () {
+  destroy () {
     this.app.stage.removeChild(this.body);
     this.app.stage.removeChild(this.playerNameText);
     this.app.stage.removeChild(this.healthbar);

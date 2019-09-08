@@ -1,13 +1,13 @@
 class Projectile {
 
-  constructor (gameInstance, options) {
+  constructor (gameInstance, config) {
     this.game = gameInstance;
     
-    const { x, y } = options.startingPosition;
+    const { x, y } = config.startingPosition;
 
-    this.id = options.id;
-    this.playerId = options.playerId;
-    this.damage = options.damage;
+    this.id = config.id;
+    this.playerId = config.playerId;
+    this.damage = config.damage;
 
     const texture = PIXI.loader.resources["assets/basic_projectile.png"].texture;
     this.body = new PIXI.Sprite(texture);
@@ -18,11 +18,11 @@ class Projectile {
 
     this.body.x = x;
     this.body.y = y;
-    this.body.rotation = options.angle;
+    this.body.rotation = config.angle;
 
-    this.velocity = options.velocity;
-    this.velocity_x = this.velocity * Math.cos(options.angle);
-    this.velocity_y = this.velocity * Math.sin(options.angle);
+    this.velocity = config.velocity;
+    this.velocity_x = this.velocity * Math.cos(config.angle);
+    this.velocity_y = this.velocity * Math.sin(config.angle);
 
     this.game.app.stage.addChild(this.body);
 
@@ -34,7 +34,7 @@ class Projectile {
     this.body.y += this.velocity_y;
   }
 
-  remove () {
+  destroy () {
     this.game.app.stage.removeChild(this.body);
   }
 }

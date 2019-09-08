@@ -64,8 +64,7 @@ module.exports = {
         id: p.id,
         name: p.name,
         color: p.color,
-        position: p.body.position,
-        health: p.health
+        position: p.body.position
       };
     });
 

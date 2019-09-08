@@ -30,7 +30,7 @@ class Pathway {
     });
   }
 
-  remove () {
+  destroy () {
     this.app.stage.removeChild(this.wormholeA);
     this.app.stage.removeChild(this.wormholeB);
   }

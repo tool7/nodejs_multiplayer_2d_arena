@@ -9,6 +9,12 @@ require('./core.shared.js');
 require('./../entities/player.server.js');
 require('./../entities/projectile.server.js');
 require('./../entities/pathway.server.js');
+require('./../entities/pickup.server.js');
+
+const PICKUP_TYPE = {
+  Health: 'health',
+  Shield: 'shield'
+};
 
 (function () {
   const frameTime = 45;     // Milliseconds
@@ -31,14 +37,17 @@ class GameCore {
     this.gameRoom = data.gameRoom;
     this.requiredPlayersCount = data.requiredPlayersCount;
 
+    this.terrain = { width: 1000, height: 800 };
     this.sharedFunctions = new SharedFunctions();
     this.isGameStarted = false;
     this.players = [];
     this.projectiles = [];
+    this.pickups = [];
     this.pathways = [
       new Pathway(uuidv4(), { x: 200, y: 200 }, { x: 800, y: 500 }, 0x00ff00),
       new Pathway(uuidv4(), { x: 100, y: 700 }, { x: 900, y: 100 }, 0xffffff)
     ];
+    this.framesTillPickupSpawn = 200;
   }
 
   // ========== CORE FUNCTIONS ==========
@@ -160,6 +169,33 @@ class GameCore {
     }
   }
 
+  server_spawnPickupIfAble () {
+    if (this.pickups.length >= 5) { return; }
+    if (this.framesTillPickupSpawn > 0) {
+      this.framesTillPickupSpawn--;
+      return;
+    }
+
+    const oneOrZero = +this.sharedFunctions.getRandomNumberInRange(0, 1).toFixed();
+    const pickupType = oneOrZero ? PICKUP_TYPE.Health : PICKUP_TYPE.Shield;
+    const pickupPosition = {
+      x: +this.sharedFunctions.getRandomNumberInRange(20, this.terrain.width - 20).toFixed(),
+      y: +this.sharedFunctions.getRandomNumberInRange(20, this.terrain.height - 20).toFixed(),
+    };
+
+    const pickup = new Pickup(uuidv4(), pickupType, pickupPosition);
+    this.pickups.push(pickup);
+
+    connectionService.emit(this.gameRoom, 'pickup-spawned', {
+      id: pickup.id,
+      type: pickupType,
+      position: pickupPosition
+    });
+
+    // TODO: Set appropriate values
+    this.framesTillPickupSpawn = +this.sharedFunctions.getRandomNumberInRange(100, 150).toFixed();
+  }
+
   server_update () {
     const playerData = this.players.map(player => {
       return {
@@ -174,6 +210,8 @@ class GameCore {
 
     const dataToSend = this.sharedFunctions.encodeWorldSnapshotData({ players: playerData });
     connectionService.emit(this.gameRoom, 'server-update', dataToSend);
+
+    this.server_spawnPickupIfAble();
 
     this.updateId = window.requestAnimationFrame(this.server_update.bind(this));
   }
@@ -240,6 +278,29 @@ class GameCore {
     connectionService.emit(this.gameRoom, 'projectile-created', options);
   }
 
+  server_tryTakePickup (pickup, player) {
+    const eventData = { id: pickup.id, playerId: player.id };
+
+    switch (pickup.type) {
+      case PICKUP_TYPE.Health:
+        if (player.health < 100) {
+          player.health = Math.min(player.health + 15, 100);
+          connectionService.emit(this.gameRoom, 'pickup-taken', eventData);
+          return true;
+        }
+        break;
+      case PICKUP_TYPE.Shield:
+        if ("!TODO:PLAYER_ALREADY_HAS_SHIELD") {
+          connectionService.emit(this.gameRoom, 'pickup-taken', eventData);
+          return true;
+        }
+
+        break;
+    }
+
+    return false;
+  }
+
   server_handleCollisions () {
     this.players.forEach(player => {
       let projectileIndex = this.projectiles.length;
@@ -292,6 +353,17 @@ class GameCore {
           });
         }
       });
+
+      this.pickups = this.pickups.filter(pickup => {
+        const isCollision = this.server_isPlayerPickupCollision(player.body.boundingBox, pickup.boundingBox);
+        let isPickupTaken = false;
+
+        if (isCollision) {
+          isPickupTaken = this.server_tryTakePickup(pickup, player);
+        }
+
+        return !isCollision || !isPickupTaken;
+      });
     });
   }
 
@@ -301,6 +373,10 @@ class GameCore {
 
   server_isPlayerWormholeCollision (player, wormhole) {
     return SAT.testCircleCircle(player, wormhole);
+  }
+
+  server_isPlayerPickupCollision (player, pickup) {
+    return SAT.testCircleCircle(player, pickup);
   }
 }
 

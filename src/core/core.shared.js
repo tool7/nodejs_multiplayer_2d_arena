@@ -126,6 +126,10 @@
         time: encodedData.t
       };
     }
+
+    getRandomNumberInRange (min, max) {
+      return Math.random() * (max - min) + min;
+    }
   }
 
   if ('undefined' !== typeof global) {

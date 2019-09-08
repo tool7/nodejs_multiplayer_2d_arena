@@ -87,6 +87,8 @@ const loadPixiTextures = async () => {
       "assets/wormhole.png",
       "assets/basic_projectile.png",
       "assets/game_background.png",
+      "assets/health_pickup.png",
+      "assets/shield_pickup.png",
       "assets/ship_explosion/1.png",
       "assets/ship_explosion/2.png",
       "assets/ship_explosion/3.png",

@@ -1,4 +1,9 @@
-// each frame is run every 16ms (~ 60fps)
+// Each frame is run every 16ms (~ 60fps)
+
+const PICKUP_TYPE = {
+  Health: 'health',
+  Shield: 'shield'
+};
 
 class GameCore extends SimpleEventEmitter {
 
@@ -13,10 +18,7 @@ class GameCore extends SimpleEventEmitter {
     this.sharedFunctions = new SharedFunctions();
     this.isGameStarted = false;
 
-    this.terrain = {
-      width: 1000,
-      height: 800
-    };
+    this.terrain = { width: 1000, height: 800 };
 
     this.updateDeltaTime = new Date().getTime();
     this.updateDeltaTimeLast = new Date().getTime();
@@ -26,6 +28,7 @@ class GameCore extends SimpleEventEmitter {
     this.otherPlayers = {};
     this.projectiles = {};
     this.pathways = {};
+    this.pickups = {};
 
     this.keyboard = new THREEx.KeyboardState();
     this.mouse = { position: {} };
@@ -55,20 +58,16 @@ class GameCore extends SimpleEventEmitter {
     const croppedBgTexture = new PIXI.Texture(bgTexture, new PIXI.Rectangle(0, 0, this.terrain.width, this.terrain.height));
     const background = new PIXI.Sprite(croppedBgTexture);
 
-    const getRandomNumberInRange = (min, max) => {
-      return Math.random() * (max - min) + min;
-    };
-
     const generateStarsEffect = () => {
       let stars = [];
 
       for (let i = 0; i < 50; i++) {
         stars.push({
           pixiGraphics: new PIXI.Graphics(),
-          radius: getRandomNumberInRange(1, 1.6),
-          x: +getRandomNumberInRange(0, this.terrain.width).toFixed(),
-          y: +getRandomNumberInRange(0, this.terrain.height).toFixed(),
-          increaseAmount: getRandomNumberInRange(0.01, 0.08)
+          radius: this.sharedFunctions.getRandomNumberInRange(1, 1.6),
+          x: +this.sharedFunctions.getRandomNumberInRange(0, this.terrain.width).toFixed(),
+          y: +this.sharedFunctions.getRandomNumberInRange(0, this.terrain.height).toFixed(),
+          increaseAmount: this.sharedFunctions.getRandomNumberInRange(0.01, 0.08)
         });
 
         this.app.stage.addChild(stars[i].pixiGraphics);
@@ -102,6 +101,8 @@ class GameCore extends SimpleEventEmitter {
     createjs.Sound.registerSound("sounds/thrust.mp3", "ship-thrust");
     createjs.Sound.registerSound("sounds/ship_explosion.mp3", "ship-explosion");
     createjs.Sound.registerSound("sounds/ship_hit.mp3", "ship-hit");
+    // createjs.Sound.registerSound("sounds/pickup_spawn.mp3", "pickup-spawn");
+    // createjs.Sound.registerSound("sounds/pickup_taken.mp3", "pickup-taken");
   }
 
   initGame () {
@@ -192,6 +193,8 @@ class GameCore extends SimpleEventEmitter {
     this.socket.on('message', this.client_onServerMessage.bind(this));
     this.socket.on('projectile-created', this.client_onProjectileCreated.bind(this));
     this.socket.on('projectile-destroyed', this.client_onProjectileDestroyed.bind(this));
+    this.socket.on('pickup-spawned', this.client_onPickupSpawned.bind(this));
+    this.socket.on('pickup-taken', this.client_onPickupTaken.bind(this));
     this.socket.on('player-shot', this.client_onPlayerShot.bind(this));
     this.socket.on('game-end', this.client_onGameEnd.bind(this));
 
@@ -300,7 +303,6 @@ class GameCore extends SimpleEventEmitter {
     this.otherPlayers = otherPlayersData.reduce((obj, p) => {
       const player = new Player(this.app, p.name, p.color);
       player.setPosition(p.position);
-      player.setHealth(p.health);
 
       obj[p.id] = player;
       return obj;
@@ -338,15 +340,16 @@ class GameCore extends SimpleEventEmitter {
   }
 
   client_onPlayerConnected (data) {
-    const player = new Player(this.app, data.name, data.color);
-    player.setPosition(data.position);
+    const { id, position, name, color } = data;
+    const player = new Player(this.app, name, color);
+    player.setPosition(position);
 
-    this.otherPlayers[data.id] = player;
+    this.otherPlayers[id] = player;
   }
 
   client_onPlayerDisconnected (id) {
     const player = this.otherPlayers[id];
-    player.remove();
+    player.destroy();
 
     delete this.otherPlayers[id];
   }
@@ -358,9 +361,43 @@ class GameCore extends SimpleEventEmitter {
 
   client_onProjectileDestroyed (id) {
     const projectile = this.projectiles[id];
-    projectile.remove();
+    projectile.destroy();
 
     delete this.projectiles[id];
+  }
+
+  client_onPickupSpawned (data) {
+    const { id, type, position } = data;
+    const pickup = new Pickup(this.app, type, position);
+
+    this.pickups[id] = pickup;
+  }
+
+  client_onPickupTaken (data) {
+    const { id, playerId } = data;
+    const pickup = this.pickups[id];
+  
+    if (this.self.id === playerId) {
+      this.client_handlePickupTaken(pickup.type, this.self);
+    }
+    else if (this.otherPlayers[playerId]) {
+      this.client_handlePickupTaken(pickup.type, this.otherPlayers[playerId]);
+    }
+
+    pickup.destroy();
+    delete this.pickups[id];
+  }
+
+  client_handlePickupTaken (type, player) {
+    switch (type) {
+      case PICKUP_TYPE.Health:
+        const health = Math.min(player.health + 15, 100);
+        player.onHealthPickupTaken(health);
+        break;
+      case PICKUP_TYPE.Shield:
+        player.onShieldPickupTaken();
+        break;
+    }
   }
 
   client_onPlayerShot (player) {
