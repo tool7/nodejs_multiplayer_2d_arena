@@ -20,7 +20,7 @@ class Pickup {
       this.body.rotation += 0.02;
     });
 
-    // createjs.Sound.play("pickup-spawn");
+    createjs.Sound.play("pickup-spawn").volume = 0.5;
   }
 
   destroy () {

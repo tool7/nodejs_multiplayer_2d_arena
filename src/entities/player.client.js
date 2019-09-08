@@ -105,7 +105,7 @@ class Player {
   }
 
   onShieldPickupTaken () {
-    
+    this.playShieldBoostEffect();
   }
 
   onDeath () {
@@ -157,7 +157,11 @@ class Player {
   }
 
   playHealEffect () {
+    createjs.Sound.play("player-heal").volume = 0.5;
+  }
 
+  playShieldBoostEffect () {
+    createjs.Sound.play("player-shield-boost").volume = 0.5;
   }
 
   playExplosionAnimation () {

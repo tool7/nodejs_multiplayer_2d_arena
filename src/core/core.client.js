@@ -101,8 +101,9 @@ class GameCore extends SimpleEventEmitter {
     createjs.Sound.registerSound("sounds/thrust.mp3", "ship-thrust");
     createjs.Sound.registerSound("sounds/ship_explosion.mp3", "ship-explosion");
     createjs.Sound.registerSound("sounds/ship_hit.mp3", "ship-hit");
-    // createjs.Sound.registerSound("sounds/pickup_spawn.mp3", "pickup-spawn");
-    // createjs.Sound.registerSound("sounds/pickup_taken.mp3", "pickup-taken");
+    createjs.Sound.registerSound("sounds/pickup_spawn.mp3", "pickup-spawn");
+    createjs.Sound.registerSound("sounds/player_heal.mp3", "player-heal");
+    createjs.Sound.registerSound("sounds/player_shield_boost.mp3", "player-shield-boost");
   }
 
   initGame () {

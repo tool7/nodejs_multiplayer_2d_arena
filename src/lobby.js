@@ -46,6 +46,8 @@ module.exports = {
       return false;
     }
   
+    client.playerName = data.playerName;
+    client.playerColor = data.playerColor;
     client.gameInstance = game.instance;
   
     const isPlayerAdded = this.tryPutPlayerToFreeSlot(client);

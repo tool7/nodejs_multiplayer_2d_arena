@@ -9,11 +9,7 @@ module.exports = {
     this._io.on('connection', socket => {
       socket.playerId = uuidv4();
     
-      socket.on('game-request', data => {
-        // TODO: Maybe move to "onClientGameRequest" function?
-        socket.playerName = data.playerName;
-        socket.playerColor = data.playerColor;
-    
+      socket.on('game-request', data => {    
         const isGameAvailable = lobby.onClientGameRequest(socket, data);
     
         if (isGameAvailable) {

@@ -140,6 +140,7 @@ const initMenuSounds = () => {
 
   createjs.Sound.registerSound("sounds/button_click.mp3", "btn-click");
   createjs.Sound.registerSound("sounds/button_hover.mp3", "btn-hover");
+  createjs.Sound.registerSound("sounds/countdown_tick.mp3", "countdown-tick");
 
   menuButtons.forEach(button => {
     button.onmouseenter = () => {
@@ -394,11 +395,13 @@ const establishGameConnection = () => {
       playerReadyModal.classList.add("hidden");
       gameStartCoutdownNumber.classList.remove("hidden");
 
-      gameStartCoutdownNumber.innerHTML = secondsToStart;
+      if (secondsToStart > 0) {
+        gameStartCoutdownNumber.innerHTML = secondsToStart;
+        createjs.Sound.play("countdown-tick").volume = 0.5;
+      }
 
       if (secondsToStart === 0) {
         gameStartCoutdownNumber.classList.add("hidden");
-        
         state.gameInstance.start();
       }
     });
