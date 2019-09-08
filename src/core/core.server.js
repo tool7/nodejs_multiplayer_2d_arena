@@ -263,7 +263,7 @@ class GameCore {
     const x = parseInt(mousePosition[0]);
     const y = parseInt(mousePosition[1]);
 
-    const options = {
+    const projectileConfig = {
       id: projectileId,
       playerId: player.id,
       startingPosition: Object.assign({}, player.body.position),
@@ -272,10 +272,11 @@ class GameCore {
       damage: 5
     };
 
-    const projectile = new Projectile(options);
+    const projectile = new Projectile(projectileConfig);
     this.projectiles.push(projectile);
 
-    connectionService.emit(this.gameRoom, 'projectile-created', options);
+    const { playerId, damage, ...eventData } = projectileConfig;
+    connectionService.emit(this.gameRoom, 'projectile-created', eventData);
   }
 
   server_tryTakePickup (pickup, player) {
@@ -285,20 +286,43 @@ class GameCore {
       case PICKUP_TYPE.Health:
         if (player.health < 100) {
           player.health = Math.min(player.health + 15, 100);
+
           connectionService.emit(this.gameRoom, 'pickup-taken', eventData);
           return true;
         }
         break;
       case PICKUP_TYPE.Shield:
-        if ("!TODO:PLAYER_ALREADY_HAS_SHIELD") {
+        if (player.shieldPoints === 0) {
+          player.shieldPoints = 5;
+
           connectionService.emit(this.gameRoom, 'pickup-taken', eventData);
           return true;
         }
-
         break;
     }
 
     return false;
+  }
+
+  server_handlePlayerShot (player, projectile) {
+    let { damage } = projectile;
+    if (player.shieldPoints > 0) {
+      damage *= 0.2;
+    }
+
+    player.health -= damage;
+    player.shieldPoints = Math.max(0, player.shieldPoints - 1);
+
+    if (player.health <= 0) {
+      this.server_onPlayerDeath(player);
+    }
+
+    const shotPlayerData = {
+      id: player.id,
+      health: player.health
+    };
+
+    connectionService.emit(this.gameRoom, 'player-shot', shotPlayerData);
   }
 
   server_handleCollisions () {
@@ -312,19 +336,9 @@ class GameCore {
         const isCollision = this.server_isPlayerProjectileCollision(player.body.boundingBox, projectile.body.boundingBox);
         
         if (isCollision) {
-          player.health -= projectile.damage;
-          if (player.health <= 0) {
-            this.server_onPlayerDeath(player);
-          }
-
-          const shotPlayerData = {
-            id: player.id,
-            health: player.health
-          };
+          this.server_handlePlayerShot(player, projectile);
 
           connectionService.emit(this.gameRoom, 'projectile-destroyed', projectile.id);
-          connectionService.emit(this.gameRoom, 'player-shot', shotPlayerData);
-
           this.projectiles.splice(projectileIndex, 1);
         }
       }

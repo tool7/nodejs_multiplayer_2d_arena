@@ -1,5 +1,6 @@
 const playerHeight = 64;
 const playerWidth = 46;
+const shieldSize = 120;
 const healthbarWidth = 80;
 const healthbarHeight = 5;
 
@@ -21,6 +22,7 @@ class Player {
     this.xVelocity = 0;
     this.yVelocity = 0;
     this.maxVelocity = 4;
+    this.shieldPoints = 0;
 
     const shipTexture = PIXI.loader.resources["assets/player_ship.png"].texture;
     this.body = new PIXI.Sprite(shipTexture);
@@ -48,6 +50,15 @@ class Player {
     this.rightThrust.y += 22;
     this.rightThrust.visible = false;
 
+    const shieldTexture = PIXI.loader.resources["assets/player_shield.png"].texture;
+    this.shield = new PIXI.Sprite(shieldTexture);
+    this.shield.tint = 0xffffff;
+    this.shield.width = shieldSize;
+    this.shield.height = shieldSize;
+    this.shield.anchor.x = 0.5;
+    this.shield.anchor.y = 0.5;
+    this.shield.visible = false;
+
     const explosionTextures = [];
     for (let i = 1; i < 10; i++) {
       const texture = PIXI.loader.resources[`assets/ship_explosion/${i}.png`].texture;
@@ -71,9 +82,14 @@ class Player {
     this.healthbar = new PIXI.Graphics();
     this.drawHealthbar();
 
+    this.app.ticker.add(() => {
+      this.shield.rotation += 0.02;
+    });
+
     this.body.addChild(this.leftThrust);
     this.body.addChild(this.rightThrust);
     this.app.stage.addChild(this.explosion);
+    this.app.stage.addChild(this.shield);
     this.app.stage.addChild(this.body);
     this.app.stage.addChild(this.playerNameText);
     this.app.stage.addChild(this.healthbar);
@@ -88,11 +104,15 @@ class Player {
       this.onDeath();
       return;
     }
-
     this.health = value;
   }
 
   onShot (newHp) {
+    this.shieldPoints = Math.max(0, this.shieldPoints - 1);
+    if (this.shieldPoints === 0) {
+      this.shield.visible = false;
+    }
+
     this.setHealth(newHp);
     this.drawHealthbar();
     this.playShotBlinkEffect();
@@ -105,6 +125,7 @@ class Player {
   }
 
   onShieldPickupTaken () {
+    this.shieldPoints = 5;
     this.playShieldBoostEffect();
   }
 
@@ -162,6 +183,7 @@ class Player {
 
   playShieldBoostEffect () {
     createjs.Sound.play("player-shield-boost").volume = 0.5;
+    this.shield.visible = true;
   }
 
   playExplosionAnimation () {
@@ -210,6 +232,9 @@ class Player {
 
     this.healthbar.x += this.xVelocity;
     this.healthbar.y += this.yVelocity;
+
+    this.shield.x += this.xVelocity;
+    this.shield.y += this.yVelocity;
   }
 
   moveTo (position) {
@@ -223,6 +248,9 @@ class Player {
 
     this.healthbar.x = x - (healthbarWidth * 0.5);
     this.healthbar.y = y - playerHeight;
+
+    this.shield.x = x;
+    this.shield.y = y;
   }
 
   rotateTo (radians) {
@@ -266,5 +294,6 @@ class Player {
     this.app.stage.removeChild(this.body);
     this.app.stage.removeChild(this.playerNameText);
     this.app.stage.removeChild(this.healthbar);
+    this.app.stage.removeChild(this.shield);
   }
 }

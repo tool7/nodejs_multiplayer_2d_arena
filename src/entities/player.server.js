@@ -22,6 +22,7 @@ class Player {
     this.xVelocity = 0;
     this.yVelocity = 0;
     this.maxVelocity = 3;
+    this.shieldPoints = 0;
 
     this.body = {
       position: { x: 0, y: 0 },

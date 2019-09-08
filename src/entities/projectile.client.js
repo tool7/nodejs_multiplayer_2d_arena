@@ -6,8 +6,6 @@ class Projectile {
     const { x, y } = config.startingPosition;
 
     this.id = config.id;
-    this.playerId = config.playerId;
-    this.damage = config.damage;
 
     const texture = PIXI.loader.resources["assets/basic_projectile.png"].texture;
     this.body = new PIXI.Sprite(texture);

@@ -2,15 +2,15 @@ const SAT = require('sat');
 
 class Projectile {
 
-  constructor (options) {    
-    let { x, y } = options.startingPosition;
+  constructor (config) {    
+    let { x, y } = config.startingPosition;
 
-    this.id = options.id;
-    this.playerId = options.playerId;
-    this.damage = options.damage;
+    this.id = config.id;
+    this.playerId = config.playerId;
+    this.damage = config.damage;
 
-    this.angle = options.angle;
-    this.velocity = options.velocity;
+    this.angle = config.angle;
+    this.velocity = config.velocity;
     this.velocity_x = this.velocity * Math.cos(this.angle);
     this.velocity_y = this.velocity * Math.sin(this.angle);
 
@@ -22,7 +22,7 @@ class Projectile {
     };
 
     let boundingBox = new SAT.Box(new SAT.Vector(x, y), 5, 15).toPolygon();
-    boundingBox.setAngle(options.angle);
+    boundingBox.setAngle(config.angle);
     this.body.boundingBox = boundingBox;
   }
 
