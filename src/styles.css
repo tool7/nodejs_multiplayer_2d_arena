@@ -169,6 +169,28 @@ li {
   width: 16rem;
 }
 
+/* ===== PLAYER CREATION MENU ===== */
+#player-creation-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#player-creation-menu__continue-btn {
+  position: absolute;
+  bottom: 6rem;
+  height: 10rem;
+  width: 24rem;
+  font-size: 2.5rem;
+}
+
+#player-creation-menu__player-name-field {
+  position: absolute;
+  top: 15%;
+}
+
 /* ===== MAIN MENU ===== */
 #main-menu {
   display: flex;
@@ -178,34 +200,12 @@ li {
   height: 100%;
 }
 
-#main-menu__continue-btn {
-  position: absolute;
-  bottom: 6rem;
-  height: 10rem;
-  width: 24rem;
-  font-size: 2.5rem;
-}
-
-#main-menu__player-name-field {
-  position: absolute;
-  top: 15%;
-}
-
-/* ===== CREATE JOIN CHOICE MENU ===== */
-#create-join-choice-menu {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-#create-join-choice-menu .title {
+#main-menu .title {
   font-size: 5rem;
   font-weight: 100;
 }
 
-#create-join-choice-menu__create-btn, #create-join-choice-menu__join-btn {
+#main-menu__create-btn, #main-menu__join-btn {
   height: 12rem;
   width: 32rem;
   margin-top: 4rem;

@@ -4,8 +4,8 @@
 
     constructor () {
       this.mapDimensions = {
-        width: 1000,
-        height: 800
+        width: 1920,
+        height: 1080
       };
     }
 

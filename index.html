@@ -30,10 +30,10 @@
   <div id="menu-container" class="container perspective">
 
     <div id="menu-box">
-      <div id="main-menu">
-        <div id="main-menu__player-name-field" class="form-field">
+      <div id="player-creation-menu" class="hidden">
+        <div id="player-creation-menu__player-name-field" class="form-field">
           <span>Enter your name:</span>
-          <input id="main-menu__player-name-input" type="text">
+          <input id="player-creation-menu__player-name-input" type="text">
         </div>
 
         <div id="color-palette">
@@ -49,17 +49,17 @@
           <span class="color-palette__item active" color="white"></span>
         </div>
 
-        <div id="main-menu__player-ship-container"></div>
+        <div id="player-creation-menu__ship-container"></div>
 
-        <button id="main-menu__continue-btn" class="disabled">Continue</button>
+        <button id="player-creation-menu__continue-btn" class="disabled">Continue</button>
       </div>
 
-      <div id="create-join-choice-menu" class="hidden">
+      <div id="main-menu" class="hidden">
         <h2 class="title">Multiplayer <br/> Space Shooter</h2>
 
-        <button id="create-join-choice-menu__create-btn">Create game</button>
-        <button id="create-join-choice-menu__join-btn">Join game</button>
-        <button id="create-join-choice-menu__back-btn" class="back-btn">Back</button>
+        <button id="main-menu__create-btn">Create game</button>
+        <button id="main-menu__join-btn">Join game</button>
+        <button id="main-menu__back-btn" class="back-btn">Back</button>
       </div>
   
       <div id="create-game-menu" class="hidden">
@@ -109,8 +109,8 @@
 
     <div id="game-start-countdown-number" class="hidden"></div>
     <div id="game-end-modal" class="hidden"></div>
-  
-    <div id="game"></div>
+
+    <canvas id="game-canvas"></canvas>
   </div>
 
 </body>

@@ -16,6 +16,11 @@ const PICKUP_TYPE = {
   Shield: 'shield'
 };
 
+const framesTillPickupSpawnMinMax = {
+  min: 500,
+  max: 1200
+};
+
 (function () {
   const frameTime = 45;     // Milliseconds
   let lastTime = 0;
@@ -37,7 +42,6 @@ class GameCore {
     this.gameRoom = data.gameRoom;
     this.requiredPlayersCount = data.requiredPlayersCount;
 
-    this.terrain = { width: 1000, height: 800 };
     this.sharedFunctions = new SharedFunctions();
     this.isGameStarted = false;
     this.players = [];
@@ -160,7 +164,6 @@ class GameCore {
 
     const alivePlayersCount = this.players.filter(p => p.isAlive).length;
 
-    // TODO: Comment this out for debugging purpose
     if (alivePlayersCount === 1) {
       const winner = this.players.find(p => p.isAlive);
       connectionService.emit(this.gameRoom, 'game-end', winner.id);
@@ -179,8 +182,9 @@ class GameCore {
     const oneOrZero = +this.sharedFunctions.getRandomNumberInRange(0, 1).toFixed();
     const pickupType = oneOrZero ? PICKUP_TYPE.Health : PICKUP_TYPE.Shield;
     const pickupPosition = {
-      x: +this.sharedFunctions.getRandomNumberInRange(20, this.terrain.width - 20).toFixed(),
-      y: +this.sharedFunctions.getRandomNumberInRange(20, this.terrain.height - 20).toFixed(),
+      // Value 20 is used as offset from borders of the map
+      x: +this.sharedFunctions.getRandomNumberInRange(20, this.sharedFunctions.mapDimensions.width - 20).toFixed(),
+      y: +this.sharedFunctions.getRandomNumberInRange(20, this.sharedFunctions.mapDimensions.height - 20).toFixed(),
     };
 
     const pickup = new Pickup(uuidv4(), pickupType, pickupPosition);
@@ -192,8 +196,10 @@ class GameCore {
       position: pickupPosition
     });
 
-    // TODO: Set appropriate values
-    this.framesTillPickupSpawn = +this.sharedFunctions.getRandomNumberInRange(100, 150).toFixed();
+    this.framesTillPickupSpawn = +this.sharedFunctions.getRandomNumberInRange(
+      framesTillPickupSpawnMinMax.min,
+      framesTillPickupSpawnMinMax.max
+    ).toFixed();
   }
 
   server_update () {
@@ -268,7 +274,7 @@ class GameCore {
       playerId: player.id,
       startingPosition: Object.assign({}, player.body.position),
       angle: this.sharedFunctions.angleBetweenPoints(player.body.position, { x, y }),
-      velocity: 3,
+      velocity: 10,
       damage: 5
     };
 

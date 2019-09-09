@@ -18,8 +18,6 @@ class GameCore extends SimpleEventEmitter {
     this.sharedFunctions = new SharedFunctions();
     this.isGameStarted = false;
 
-    this.terrain = { width: 1000, height: 800 };
-
     this.updateDeltaTime = new Date().getTime();
     this.updateDeltaTimeLast = new Date().getTime();
 
@@ -38,15 +36,15 @@ class GameCore extends SimpleEventEmitter {
     this.client_createNetConfiguration();
     // this.client_createDebugGUI();
 
-    this.gameHtmlElement = document.getElementById("game");
+    const gameCanvas = document.getElementById("game-canvas");
     this.app = new PIXI.Application({
-      width: this.terrain.width,
-      height: this.terrain.height,
+      width: this.sharedFunctions.mapDimensions.width,
+      height: this.sharedFunctions.mapDimensions.height,
       antialias: true,
       transparent: false,
-      resolution: 1
+      resolution: 1,
+      view: gameCanvas
     });
-    this.gameHtmlElement.appendChild(this.app.view);
 
     this.drawMap();
     this.initSounds();
@@ -55,7 +53,13 @@ class GameCore extends SimpleEventEmitter {
 
   drawMap () {
     const bgTexture = PIXI.loader.resources["assets/game_background.png"].texture;
-    const croppedBgTexture = new PIXI.Texture(bgTexture, new PIXI.Rectangle(0, 0, this.terrain.width, this.terrain.height));
+    const croppedBgTexture = new PIXI.Texture(bgTexture,
+      new PIXI.Rectangle(
+        0, 0,
+        this.sharedFunctions.mapDimensions.width,
+        this.sharedFunctions.mapDimensions.height
+    ));
+
     const background = new PIXI.Sprite(croppedBgTexture);
 
     const generateStarsEffect = () => {
@@ -65,8 +69,8 @@ class GameCore extends SimpleEventEmitter {
         stars.push({
           pixiGraphics: new PIXI.Graphics(),
           radius: this.sharedFunctions.getRandomNumberInRange(1, 1.6),
-          x: +this.sharedFunctions.getRandomNumberInRange(0, this.terrain.width).toFixed(),
-          y: +this.sharedFunctions.getRandomNumberInRange(0, this.terrain.height).toFixed(),
+          x: +this.sharedFunctions.getRandomNumberInRange(0, this.sharedFunctions.mapDimensions.width).toFixed(),
+          y: +this.sharedFunctions.getRandomNumberInRange(0, this.sharedFunctions.mapDimensions.height).toFixed(),
           increaseAmount: this.sharedFunctions.getRandomNumberInRange(0.01, 0.08)
         });
 
@@ -145,8 +149,6 @@ class GameCore extends SimpleEventEmitter {
 
   destroy () {
     this.app.destroy();
-    this.gameHtmlElement.innerHTML = null;
-
     this.stop();
   }
   // ====================================
