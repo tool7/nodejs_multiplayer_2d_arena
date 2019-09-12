@@ -70,6 +70,9 @@ class GameCore {
 
   stop () {
     this.isGameStarted = false;
+    this.players = [];
+    this.projectiles = [];
+    this.pickups = [];
 
     clearInterval(this.physicsUpdateId);
     window.cancelAnimationFrame(this.updateId);
