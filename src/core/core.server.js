@@ -77,7 +77,7 @@ class GameCore {
   // ====================================
 
   server_addPlayer (data) {
-    if (this.server_isGameAvailableForJoin()) {
+    if (!this.server_isGameAvailableForJoin()) {
       return false;
     }
 
@@ -90,13 +90,15 @@ class GameCore {
 
   server_removePlayer (playerId) {
     this.players = this.players.filter(p => p.id !== playerId);
+
+    this.server_stopGameIfThereAreNoPlayers();
   }
 
   server_isGameAvailableForJoin () {
     if (this.isGameStarted) {
       return false;
     }
-    return this.players.length === this.requiredPlayersCount;
+    return this.players.length < this.requiredPlayersCount;
   }
 
   server_setPlayerInitialPosition (player) {
@@ -157,6 +159,14 @@ class GameCore {
         this.start();
       }
     }, 1000);    
+  }
+
+  server_stopGameIfThereAreNoPlayers() {
+    if (!this.isGameStarted) { return; }
+
+    if (this.players.length === 0) {
+      this.stop();
+    }
   }
 
   server_endGameIfThereIsWinner() {

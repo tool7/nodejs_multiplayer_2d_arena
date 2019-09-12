@@ -41,7 +41,7 @@ module.exports = {
   onClientGameRequest (client, data) {
     const game = this.games[data.name];
     if (!game
-      || game.instance.server_isGameAvailableForJoin()
+      || !game.instance.server_isGameAvailableForJoin()
       || (!!game.password && game.password !== data.password)) {
       return false;
     }
