@@ -147,20 +147,24 @@ window.onload = async function () {
     playerShipSprite.anchor.set(0.5);
     playerShipSprite.x = 60;
     playerShipSprite.y = 60;
-  
     pixiApp.stage.addChild(playerShipSprite);
-    
-    pixiApp.ticker.add(() => {
-      playerShipSprite.rotation += 0.01;
-      playerShipSprite.tint = state.playerColor;
-    });
-  
+
+    let playerPreviewTint = state.playerColor;
+
     colorPaletteItems.forEach(item => {
       item.addEventListener("click", () => {
         colorPaletteItems.forEach(i => { i.classList.remove("active"); });
         item.classList.add("active");
+
+        const color = item.getAttribute("color");
+        playerPreviewTint = colorPalette[color];
       });
     });
+  
+    pixiApp.ticker.add(() => {
+      playerShipSprite.rotation += 0.01;
+      playerShipSprite.tint = playerPreviewTint;
+    }); 
   };
   
   const initMenuState = () => {
@@ -463,8 +467,8 @@ window.onload = async function () {
   await loadTextures();
   await loadSounds();
 
-  initPlayerShipColorPalette();
   initMenuState();
+  initPlayerShipColorPalette();
   initMenuSounds();
   initMenuBoxAnimation();
   initMenuEventHandlers();
