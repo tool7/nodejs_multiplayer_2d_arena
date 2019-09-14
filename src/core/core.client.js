@@ -250,6 +250,7 @@ class GameCore extends SimpleEventEmitter {
     let selfPlayerData = latestServerData.players[this.self.id];
 
     let selfPositionOnServer = selfPlayerData.position;
+    let selfVelocityOnServer = selfPlayerData.velocity;
     let selfLastInputSeqOnServer = selfPlayerData.lastInputSeq;
     
     if (!selfLastInputSeqOnServer) { return; }
@@ -262,7 +263,8 @@ class GameCore extends SimpleEventEmitter {
       }
     }
 
-    this.self.moveTo(selfPositionOnServer);
+    this.self.setPosition(selfPositionOnServer);
+    this.self.setVelocity(selfVelocityOnServer);
 
     if (!lastInputSeqIndex) { return; }
 
@@ -289,7 +291,7 @@ class GameCore extends SimpleEventEmitter {
       }
     }
 
-    this.self.rotateTo(selfAngleOnServer);
+    this.self.setRotation(selfAngleOnServer);
 
     if (!lastAngleSeqIndex) { return; }
 
@@ -536,22 +538,14 @@ class GameCore extends SimpleEventEmitter {
 
       if (this.entityInterpolation) {
         const interpolatedPosition = this.v_lerp(previousPlayerState.position, targetPlayerState.position, timePoint);
-        player.moveTo(interpolatedPosition);
+        player.setPosition(interpolatedPosition);
       }
       else {
-        player.moveTo(targetPlayerState.position);
+        player.setPosition(targetPlayerState.position);
       }
 
-      player.rotateTo(targetPlayerState.rotation);
+      player.setRotation(targetPlayerState.rotation);
     });
-
-    // Updating positions of local player if not predicting
-    if (!this.clientPrediction) {
-      let targetPlayerState = target.players[this.self.id];
-
-      this.self.moveTo(targetPlayerState.position);
-      this.self.rotateTo(targetPlayerState.rotation);
-    }
   }
 
   client_updateOtherPlayersThrustEffect () {

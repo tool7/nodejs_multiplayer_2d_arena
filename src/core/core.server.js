@@ -220,6 +220,7 @@ class GameCore {
       return {
         id: player.id,
         position: Object.assign({}, player.body.position),
+        velocity: { x: player.xVelocity, y: player.yVelocity },
         rotation: player.body.rotation,
         lastInputSeq: +player.lastInputSeq,
         lastAngleSeq: +player.lastAngleSeq,
@@ -374,13 +375,13 @@ class GameCore {
         };
         
         if (isPlayerWormholeACollision) {
-          player.moveTo({
+          player.setPosition({
             x: wormholeB.position.x + teleportOffset.x,
             y: wormholeB.position.y + teleportOffset.y
           });
         }
         else if (isPlayerWormholeBCollision) {
-          player.moveTo({
+          player.setPosition({
             x: wormholeA.position.x + teleportOffset.x,
             y: wormholeA.position.y + teleportOffset.y
           });

@@ -96,7 +96,28 @@ class Player {
   }
 
   setPosition (position) {
-    this.moveTo(position);
+    const { x, y } = position;
+
+    this.body.x = x;
+    this.body.y = y;
+
+    this.playerNameText.x = x - (healthbarWidth * 0.5);
+    this.playerNameText.y = y - playerHeight - 20;
+
+    this.healthbar.x = x - (healthbarWidth * 0.5);
+    this.healthbar.y = y - playerHeight;
+
+    this.shield.x = x;
+    this.shield.y = y;
+  }
+
+  setVelocity (velocity) {
+    this.xVelocity = velocity.x;
+    this.yVelocity = velocity.y;
+  }
+
+  setRotation (radians) {
+    this.body.rotation = radians;
   }
 
   setHealth (value) {
@@ -235,26 +256,6 @@ class Player {
 
     this.shield.x += this.xVelocity;
     this.shield.y += this.yVelocity;
-  }
-
-  moveTo (position) {
-    const { x, y } = position;
-
-    this.body.x = x;
-    this.body.y = y;
-
-    this.playerNameText.x = x - (healthbarWidth * 0.5);
-    this.playerNameText.y = y - playerHeight - 20;
-
-    this.healthbar.x = x - (healthbarWidth * 0.5);
-    this.healthbar.y = y - playerHeight;
-
-    this.shield.x = x;
-    this.shield.y = y;
-  }
-
-  rotateTo (radians) {
-    this.body.rotation = radians;
   }
 
   updateThrustEffect (isEnabled) {

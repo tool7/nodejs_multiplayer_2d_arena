@@ -34,7 +34,14 @@ class Player {
   }
 
   setPosition (position) {
-    this.moveTo(position);
+    this.body.position.x = position.x;
+    this.body.position.y = position.y;
+
+    this.body.boundingBox.pos = position;
+  }
+
+  setRotation (radians) {
+    this.body.rotation = radians;
   }
 
   drive () {
@@ -67,17 +74,6 @@ class Player {
 
     this.body.boundingBox.pos.x += this.xVelocity;
     this.body.boundingBox.pos.y += this.yVelocity;
-  }
-
-  moveTo (position) {
-    this.body.position.x = position.x;
-    this.body.position.y = position.y;
-
-    this.body.boundingBox.pos = position;
-  }
-
-  rotateTo (radians) {
-    this.body.rotation = radians;
   }
 }
 

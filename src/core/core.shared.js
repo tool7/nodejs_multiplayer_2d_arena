@@ -36,7 +36,7 @@
         if (player.angles[i].seq <= player.lastAngleSeq) { continue; }
   
         let angle = player.angles[i].value;
-        player.rotateTo(angle);
+        player.setRotation(angle);
       }
     
       player.lastAngleSeq = player.angles[anglesLength - 1].seq;
@@ -72,7 +72,7 @@
         player.yVelocity = 0;
       }
 
-      player.moveTo({ x: playerPosX, y: playerPosY });
+      player.setPosition({ x: playerPosX, y: playerPosY });
     }
 
     isPositionOutOfBounds (position) {
@@ -99,7 +99,7 @@
       };
 
       data.players.forEach(p => {
-        encodedData.players[p.id] = `${ p.position.x }-${ p.position.y };${ p.rotation };${ p.lastInputSeq };${ p.lastAngleSeq };${ p.thrustEffect }`
+        encodedData.players[p.id] = `${ p.position.x },${ p.position.y };${ p.velocity.x },${ p.velocity.y };${ p.rotation };${ p.lastInputSeq };${ p.lastAngleSeq };${ p.thrustEffect }`
       });
 
       return encodedData;
@@ -110,14 +110,16 @@
 
       Object.keys(encodedData.players).forEach(playerId => {
         const encodedPlayerData = encodedData.players[playerId].split(";");
-        const encodedPlayerPosition = encodedPlayerData[0].split("-");
+        const encodedPlayerPosition = encodedPlayerData[0].split(",");
+        const encodedPlayerVelocity = encodedPlayerData[1].split(",");
 
         players[playerId] = {
           position: { x: +encodedPlayerPosition[0], y: +encodedPlayerPosition[1] },
-          rotation: +encodedPlayerData[1],
-          lastInputSeq: +encodedPlayerData[2],
-          lastAngleSeq: +encodedPlayerData[3],
-          thrustEffect: !!+encodedPlayerData[4]
+          velocity: { x: +encodedPlayerVelocity[0], y: +encodedPlayerVelocity[1] },
+          rotation: +encodedPlayerData[2],
+          lastInputSeq: +encodedPlayerData[3],
+          lastAngleSeq: +encodedPlayerData[4],
+          thrustEffect: !!+encodedPlayerData[5]
         };
       });
 
