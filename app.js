@@ -4,6 +4,10 @@ const server = require('http').Server(app);
 const bodyParser = require('body-parser');
 const lobby = require('./src/lobby.js');
 
+// ============== CONFIG ===============
+const PORT = 3000;
+// =====================================
+
 require('./src/connection_service').init(server, lobby);
 
 app.use('/', express.static(__dirname));
@@ -25,6 +29,6 @@ app.post('/api/games', (req, res) => {
   isSuccess ? res.sendStatus(200) : res.sendStatus(400);
 });
 
-server.listen(3000, () => {
-  console.log('listening on *:3000');
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}...`);
 });
