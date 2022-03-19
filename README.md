@@ -17,4 +17,8 @@ I worked on this project primarily for personal educational purposes, so please 
 ***
 
 ### Screenshots:
-![screenshot-1]()
+![screenshot_1](https://github.com/tool7/nodejs_multiplayer_2d_arena/blob/master/assets/screenshots/screenshot_1.png?raw=true)
+
+![screenshot_2](https://github.com/tool7/nodejs_multiplayer_2d_arena/blob/master/assets/screenshots/screenshot_2.png?raw=true)
+
+![screenshot_3](https://github.com/tool7/nodejs_multiplayer_2d_arena/blob/master/assets/screenshots/screenshot_3.png?raw=true)
