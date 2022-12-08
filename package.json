@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "body-parser": "^1.19.0",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "sat": "^0.7.1",
     "socket.io": "^2.1.1",
     "uuid": "^3.3.2"
